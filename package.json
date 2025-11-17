@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "bootstrap-autocomplete": "^2.3.7",
+    "chart.js": "^4.5.1",
+    "jquery": "^3.7.1"
+  }
+}

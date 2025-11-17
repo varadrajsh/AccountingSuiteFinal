@@ -1,0 +1,82 @@
+﻿@model AccountingSuite.Models.Master.Party
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<form id="editForm" asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <input type="hidden" asp-for="PartyId" />
+
+    <table class="table table-bordered table-striped">
+        <tbody>
+            <tr>
+                <th>Party Code</th>
+                <td>
+                    <input asp-for="PartyCode" class="form-control" readonly />
+                </td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>Party Type</th>
+                <td>
+                    <select asp-for="PartyType" class="form-select">
+                        <option value="Customer">Customer</option>
+                        <option value="Vendor">Vendor</option>
+                        <option value="Both">Both</option>
+                    </select>
+                    <span asp-validation-for="PartyType" class="text-danger"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>GSTIN</th>
+                <td>
+                    <input asp-for="GSTIN" class="form-control" />
+                    <span asp-validation-for="GSTIN" class="text-danger"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>Contact Number</th>
+                <td>
+                    <input asp-for="ContactNumber" class="form-control" />
+                    <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Email</th>
+                <td>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>Active</th>
+                <td>
+                    <div class="form-check">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+    </div>
+</form>
