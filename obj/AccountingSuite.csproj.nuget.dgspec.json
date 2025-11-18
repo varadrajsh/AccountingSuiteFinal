@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VTPL_Proj\\AccountSuite\\AccountingSuite.csproj": {}
+    "/Users/varadrajsh/Documents/Acc/AccountSuite/AccountingSuite.csproj": {}
   },
   "projects": {
-    "D:\\VTPL_Proj\\AccountSuite\\AccountingSuite.csproj": {
+    "/Users/varadrajsh/Documents/Acc/AccountSuite/AccountingSuite.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VTPL_Proj\\AccountSuite\\AccountingSuite.csproj",
+        "projectUniqueName": "/Users/varadrajsh/Documents/Acc/AccountSuite/AccountingSuite.csproj",
         "projectName": "AccountingSuite",
-        "projectPath": "D:\\VTPL_Proj\\AccountSuite\\AccountingSuite.csproj",
-        "packagesPath": "C:\\Users\\varadraj\\.nuget\\packages\\",
-        "outputPath": "D:\\VTPL_Proj\\AccountSuite\\obj\\",
+        "projectPath": "/Users/varadrajsh/Documents/Acc/AccountSuite/AccountingSuite.csproj",
+        "packagesPath": "/Users/varadrajsh/.nuget/packages/",
+        "outputPath": "/Users/varadrajsh/Documents/Acc/AccountSuite/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "d:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\varadraj\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/varadrajsh/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -78,7 +72,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
