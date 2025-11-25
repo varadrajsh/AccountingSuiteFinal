@@ -3,8 +3,9 @@ using AccountingSuite.Models.Common;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AccountingSuite.Controllers
+namespace AccountingSuite.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class PartyController : Controller
     {
         private readonly PartyRepository _repository;
@@ -13,7 +14,7 @@ namespace AccountingSuite.Controllers
             _repository = partyRepository;
         }
 
-        public IActionResult Index(string? searchTerm, int pageNumber = 1, int pageSize = 10)
+        public IActionResult Index(string? searchTerm, int pageNumber = 1, int pageSize = 15)
         {
             var parties = _repository.GetAll();
 
@@ -83,8 +84,9 @@ namespace AccountingSuite.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = ex.Message;
-                //ModelState.AddModelError("", ex.Message);
+
+                //TempData["Error"] = ex.Message;
+                ModelState.AddModelError("",ex.Message);
                 return PartialView("_Edit", party);
             }
         }

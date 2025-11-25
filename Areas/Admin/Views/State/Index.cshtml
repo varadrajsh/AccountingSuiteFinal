@@ -1,0 +1,116 @@
+﻿@model IEnumerable<AccountingSuite.Models.Master.State>
+@{
+    ViewData["Title"] = "Admin - States";
+    var regions = ViewBag.Regions as IEnumerable<AccountingSuite.Models.Master.Region>;
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <h2 class="mb-0">State List</h2>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            State List
+        </li>
+    </ol>
+</nav>
+
+<!-- Action buttons -->
+<div class="d-flex flex-wrap gap-2 mb-3 w-100">
+    <!-- Region filter + View State -->
+    <form asp-action="Index" method="get" class="d-flex gap-2 w-50">
+        <select name="regionId" class="form-select form-select-sm border-dark w-100">
+            <option value="">-- Select Region --</option>
+            @if (regions != null)
+            {
+                foreach (var r in regions)
+                {
+                    <option value="@r.RegionId">@r.RegionName</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View State</button>
+    </form>
+
+    <!-- View All States -->
+    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All States</a>
+
+    <!-- Add State (modal trigger) -->
+    <button type="button" class="btn btn-sm btn-primary text-center text-nowrap" data-bs-toggle="modal" data-bs-target="#addStateModal">
+        Add State
+    </button>
+</div>
+
+<!-- Table -->
+<div class="table-responsive">
+    <table class="table table-pill table-sm table-hover mt-2">
+        <thead>
+            <tr>
+                <th>State Name</th>
+                <th>Region</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var s in Model)
+                {
+                    <tr>
+                        <td>@s.StateName</td>
+                        <td>@regions?.FirstOrDefault(r => r.RegionId == s.RegionId)?.RegionName</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No states found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Add State Modal -->
+<div class="modal fade" id="addStateModal" tabindex="-1" aria-labelledby="addStateLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @* @Html.Partial("_CreatePartial", new AccountingSuite.Models.Master.State()) *@
+            <partial name="_CreatePartial" model="new AccountingSuite.Models.Master.State()" />
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+   
+} 
+

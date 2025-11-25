@@ -1,27 +1,20 @@
 ﻿@model AccountingSuite.Models.Master.Party
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+@{
+    Layout = null;
 }
-<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
 <form id="editForm" asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
+    <!-- ✅ Validation summary -->
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
     <input type="hidden" asp-for="PartyId" />
 
     <table class="table table-bordered table-striped">
         <tbody>
             <tr>
                 <th>Party Code</th>
-                <td>
-                    <input asp-for="PartyCode" class="form-control" readonly />
-                </td>
+                <td><input asp-for="PartyCode" class="form-control" readonly /></td>
             </tr>
             <tr>
                 <th>Name</th>
@@ -55,7 +48,13 @@
                     <span asp-validation-for="ContactNumber" class="text-danger"></span>
                 </td>
             </tr>
-
+            <tr>
+                <th>Address</th>
+                <td>
+                    <input asp-for="Address" class="form-control" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </td>
+            </tr>
             <tr>
                 <th>Email</th>
                 <td>

@@ -1,4 +1,5 @@
 using AccountingSuite.Data;
+using AccountingSuite.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,11 @@ builder.Services.AddControllersWithViews();
 //Register DbHelper with connection string
 builder.Services.AddScoped<DbHelper>(item => new DbHelper(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<PartyRepository>();
-builder.Services.AddScoped<AccountHeadRepository>();
+builder.Services.AddScoped<RegionRepository>();
+builder.Services.AddScoped<StateRepository>();
+builder.Services.AddScoped<BranchRepository>();
+
+
 
 
 var app = builder.Build();
@@ -27,6 +32,10 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
