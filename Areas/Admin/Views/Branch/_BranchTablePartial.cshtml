@@ -22,7 +22,17 @@
                         <td>@b.BranchName</td>
                         <td>@b.MobNumber</td>
                         <td>@b.State?.StateName</td>
-                        <td>@(b.IsActive ? "Active" : "Inactive")</td>
+                        <td>
+                        @if (b.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </td>
+                        @* <td>@(b.IsActive ? "Active" : "Inactive")</td> *@
                         <td>
                             <a href="javascript:void(0)" class="text-primary"
                                data-bs-toggle="modal" data-bs-target="#branchDetailsModal"
@@ -77,7 +87,7 @@
     }
 </div>
 
-<!-- ✅ Details Modal -->
+<!-- Details Modal -->
 <div class="modal fade" id="branchDetailsModal" tabindex="-1" aria-labelledby="branchDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" id="branchDetailsContent">
