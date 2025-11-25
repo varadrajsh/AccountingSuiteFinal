@@ -144,7 +144,16 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return PartialView("_DetailsPartial", branch);
         }
 
-        
+        public IActionResult TableByState(int stateId, int pageNumber = 1, int pageSize = 10)
+        {
+            var branches = _repo.GetAll().Where(b => b.StateId == stateId);
+
+            var paginated = PaginatedList<Branch>.Create(branches, pageNumber, pageSize);
+
+            // Partial must exist in Areas/Admin/Views/Branch/_BranchTablePartial.cshtml
+            return PartialView("_BranchTablePartial", paginated);
+        }
+
 
     }
 }
