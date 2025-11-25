@@ -1,0 +1,116 @@
+﻿@model AccountingSuite.Models.Master.Branch
+
+@{
+    ViewData["Title"] = "Edit Branch";
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h2>Edit Branch</h2>
+
+<form asp-action="Edit" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div class="col-10">
+
+        <!-- Hidden BranchId -->
+        <input type="hidden" asp-for="BranchId" />
+
+        <!-- State -->
+        <div class="col-md-12 mb-3">
+            <label asp-for="StateId" class="form-label">State</label>
+            <select asp-for="StateId" asp-items="ViewBag.States" class="form-select">
+                <option value="">-- Select State --</option>
+            </select>
+            <span asp-validation-for="StateId" class="text-danger"></span>
+        </div>
+
+        <!-- Branch Code + Branch Name -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="BranchCode" class="form-label"></label>
+                <input asp-for="BranchCode" class="form-control" />
+                <span asp-validation-for="BranchCode" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="BranchName" class="form-label"></label>
+                <input asp-for="BranchName" class="form-control" />
+                <span asp-validation-for="BranchName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Address + Email -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Address" class="form-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- PinCode + LandNumber -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="PinCode" class="form-label"></label>
+                <input asp-for="PinCode" class="form-control" />
+                <span asp-validation-for="PinCode" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LandNumber" class="form-label"></label>
+                <input asp-for="LandNumber" class="form-control" />
+                <span asp-validation-for="LandNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- MobNumber + ParcelBooking -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="MobNumber" class="form-label"></label>
+                <input asp-for="MobNumber" class="form-control" />
+                <span asp-validation-for="MobNumber" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="IsParcelBooking" class="form-label">Parcel Booking</label>
+                <select asp-for="IsParcelBooking" class="form-select">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                </select>
+                <span asp-validation-for="IsParcelBooking" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Active Status -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="IsActive" class="form-label">Status</label>
+                <select asp-for="IsActive" class="form-select">
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+                <span asp-validation-for="IsActive" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a asp-action="Index" class="btn btn-dark">Back to list</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

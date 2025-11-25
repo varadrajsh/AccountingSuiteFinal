@@ -56,13 +56,14 @@
     <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All States</a>
 
     <!-- Add State (modal trigger) -->
-    <button type="button" class="btn btn-sm btn-primary text-center text-nowrap" data-bs-toggle="modal" data-bs-target="#addStateModal">
+    <button type="button" class="btn btn-sm btn-primary text-center text-nowrap" data-bs-toggle="modal"
+        data-bs-target="#addStateModal">
         Add State
     </button>
 </div>
 
 <!-- Table -->
-<div class="table-responsive">
+@* <div class="table-responsive">
     <table class="table table-pill table-sm table-hover mt-2">
         <thead>
             <tr>
@@ -89,7 +90,48 @@
             }
         </tbody>
     </table>
+</div> *@
+<!-- Table -->
+<div class="table-responsive">
+    <table class="table table-pill table-sm table-hover mt-2">
+        <thead>
+            <tr>
+                <th>State Name</th>
+                <th>Region</th>
+                <th>Actions</th> <!-- ✅ new column -->
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var s in Model)
+                {
+                    <tr>
+                        <td>@s.StateName</td>
+                        <td>@regions?.FirstOrDefault(r => r.RegionId == s.RegionId)?.RegionName</td>
+                        <td>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item">
+                                        <a href="javascript:void(0)" class="text-primary"
+                                            onclick="loadBranches(@s.StateId)">View Branches</a>
+                                    </li>
+                                </ol>
+                            </nav>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No states found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
+
 
 <!-- Add State Modal -->
 <div class="modal fade" id="addStateModal" tabindex="-1" aria-labelledby="addStateLabel" aria-hidden="true">
@@ -101,16 +143,18 @@
         </div>
     </div>
 </div>
-
-
-
-
-
+<div id="branchTableContainer" class="mt-3"></div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-   
-} 
-
+         <script>
+        function loadBranches(stateId, pageNumber = 1) {
+            $("#branchTableContainer").load('/Admin/Branch/TableByState?stateId=' + stateId + '&pageNumber=' + pageNumber);
+        }
+          function loadBranchDetails(branchId) {
+        $("#branchDetailsContent").load('/Admin/Branch/Details?id=' + branchId);
+    }
+    </script>
+}

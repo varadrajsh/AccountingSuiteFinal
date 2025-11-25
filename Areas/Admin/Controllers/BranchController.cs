@@ -1,5 +1,6 @@
 using AccountingSuite.Data;
 using AccountingSuite.Data.Repositories;
+using AccountingSuite.Models.Common;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,18 +19,23 @@ namespace AccountingSuite.Areas.Admin.Controllers
             _stateRepo = stateRepo;
         }
 
-        public IActionResult Index(int? stateId)
+        public IActionResult Index(int? stateId, string searchTerm, int pageNumber = 1)
         {
-            IEnumerable<Branch> branches = stateId.HasValue
-                ? _repo.GetAll().Where(b => b.StateId == stateId.Value)
-                : _repo.GetAll();
+            // ✅ Populate dropdown
+            ViewBag.States = _stateRepo.GetAll();
 
-            ViewBag.States = _stateRepo.GetAll()
-                .Select(s => new SelectListItem { Value = s.StateId.ToString(), Text = s.StateName })
-                .ToList();
+            var branches = _repo.GetAll();
 
-            return View(branches);
+            if (stateId.HasValue)
+                branches = branches.Where(b => b.StateId == stateId.Value);
+
+            if (!string.IsNullOrEmpty(searchTerm))
+                branches = branches.Where(b => b.BranchName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+            var paginated = PaginatedList<Branch>.Create(branches, pageNumber, 10);
+            return View(paginated);
         }
+
 
         [HttpGet]
         public IActionResult Create()
@@ -49,7 +55,10 @@ namespace AccountingSuite.Areas.Admin.Controllers
             {
                 try
                 {
-                    _repo.Insert(branch);
+                    branch.BranchCode = branch.BranchCode.Trim().ToUpperInvariant();
+                    branch.BranchName = branch.BranchName.Trim().ToUpperInvariant();
+
+                    _repo.Insert(branch); // ✅ no need to set IsActive, SP enforces it
                     TempData["Message"] = "Branch created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
@@ -58,15 +67,15 @@ namespace AccountingSuite.Areas.Admin.Controllers
                     TempData["Error"] = ex.Message;
                 }
             }
-          
 
-            // reload states for redisplay
             ViewBag.States = _stateRepo.GetAll()
                 .Select(s => new SelectListItem { Value = s.StateId.ToString(), Text = s.StateName })
                 .ToList();
 
             return View(branch);
         }
+
+
 
         [HttpPost]
         public IActionResult UpdateStatus(int branchId, bool isActive)
@@ -83,5 +92,59 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var branch = _repo.GetById(id);
+            if (branch == null) return NotFound();
+
+            ViewBag.States = _stateRepo.GetAll()
+                .Select(s => new SelectListItem { Value = s.StateId.ToString(), Text = s.StateName })
+                .ToList();
+
+            return View(branch);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Branch branch)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    branch.BranchCode = branch.BranchCode.Trim().ToUpperInvariant();
+                    branch.BranchName = branch.BranchName.Trim().ToUpperInvariant();
+
+                    _repo.Update(branch);
+                    TempData["Message"] = "Branch updated successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = ex.Message;
+                }
+            }
+
+            ViewBag.States = _stateRepo.GetAll()
+                .Select(s => new SelectListItem { Value = s.StateId.ToString(), Text = s.StateName })
+                .ToList();
+
+            return View(branch);
+        }
+
+        public IActionResult Details(int id)
+        {
+            var branch = _repo.GetById(id);
+            if (branch == null)
+            {
+                return NotFound();
+            }
+            return PartialView("_DetailsPartial", branch);
+        }
+
+        
+
     }
 }

@@ -1,0 +1,87 @@
+﻿@model AccountingSuite.Models.Common.PaginatedList<AccountingSuite.Models.Master.Branch>
+
+<div class="table-responsive">
+    <table class="table table-pill table-sm table-hover mt-2 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Branch Code</th>
+                <th>Branch Name</th>
+                <th>Mobile Number</th>
+                <th>State</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var b in Model)
+                {
+                    <tr>
+                        <td>@b.BranchCode</td>
+                        <td>@b.BranchName</td>
+                        <td>@b.MobNumber</td>
+                        <td>@b.State?.StateName</td>
+                        <td>@(b.IsActive ? "Active" : "Inactive")</td>
+                        <td>
+                            <a href="javascript:void(0)" class="text-primary"
+                               data-bs-toggle="modal" data-bs-target="#branchDetailsModal"
+                               onclick="loadBranchDetails(@b.BranchId)">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No branches found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+    @if (Model.HasPreviousPage)
+    {
+        <a href="javascript:void(0)" class="text-primary"
+           onclick="loadBranches(@Model.First().StateId, @(Model.PageIndex - 1))">&lt;Prev</a>
+    }
+    else
+    {
+        <span class="text-muted">&lt;Prev</span>
+    }
+
+    <span class="fw-regular">
+        @if (Model.TotalCount == 0)
+        {
+            <span class="fw-semibold">No records found</span>
+        }
+        else
+        {
+            <span>Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records</span>
+        }
+    </span>
+
+    @if (Model.HasNextPage)
+    {
+        <a href="javascript:void(0)" class="text-primary"
+           onclick="loadBranches(@Model.First().StateId, @(Model.PageIndex + 1))">Next&gt;</a>
+    }
+    else
+    {
+        <span class="text-muted">Next&gt;</span>
+    }
+</div>
+
+<!-- ✅ Details Modal -->
+<div class="modal fade" id="branchDetailsModal" tabindex="-1" aria-labelledby="branchDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="branchDetailsContent">
+            <!-- Branch details will be loaded here -->
+        </div>
+    </div>
+</div>

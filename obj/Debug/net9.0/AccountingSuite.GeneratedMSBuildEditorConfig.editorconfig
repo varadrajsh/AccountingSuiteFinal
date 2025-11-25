@@ -32,8 +32,20 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQnJhbmNoL0NyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/Areas/Admin/Views/Branch/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQnJhbmNoL0VkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/Areas/Admin/Views/Branch/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQnJhbmNoL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/Areas/Admin/Views/Branch/_BranchTablePartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQnJhbmNoL19CcmFuY2hUYWJsZVBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/Areas/Admin/Views/Branch/_DetailsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvQnJhbmNoL19EZXRhaWxzUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/Areas/Admin/Views/Party/Create.cshtml]

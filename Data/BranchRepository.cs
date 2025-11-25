@@ -11,7 +11,7 @@ namespace AccountingSuite.Data.Repositories
         {
             _db = db;
         }
-
+    
         public IEnumerable<Branch> GetAll()
         {
             using var conn = _db.GetConnection();
@@ -89,11 +89,6 @@ namespace AccountingSuite.Data.Repositories
             cmd.Parameters.AddWithValue("@PinCode", branch.PinCode);
             cmd.Parameters.AddWithValue("@LandNumber", branch.LandNumber);
             cmd.Parameters.AddWithValue("@MobNumber", branch.MobNumber);
-
-            // ✅ Always Active
-            cmd.Parameters.AddWithValue("@IsActive", true);
-
-            // ✅ Parcel Booking from dropdown
             cmd.Parameters.AddWithValue("@IsParcelBooking", branch.IsParcelBooking);
 
             cmd.ExecuteNonQuery();
@@ -107,5 +102,26 @@ namespace AccountingSuite.Data.Repositories
             cmd.Parameters.AddWithValue("@IsActive", isActive);
             cmd.ExecuteNonQuery();
         }
+
+        public void Update(Branch branch)
+        {
+            using var conn = _db.GetConnection();
+            using var cmd = _db.CreateCommand(conn, "spBranch_Update");
+
+            cmd.Parameters.AddWithValue("@BranchId", branch.BranchId);
+            cmd.Parameters.AddWithValue("@BranchCode", branch.BranchCode.Trim().ToUpperInvariant());
+            cmd.Parameters.AddWithValue("@BranchName", branch.BranchName.Trim().ToUpperInvariant());
+            cmd.Parameters.AddWithValue("@StateId", branch.StateId);
+            cmd.Parameters.AddWithValue("@Email", branch.Email);
+            cmd.Parameters.AddWithValue("@Address", branch.Address);
+            cmd.Parameters.AddWithValue("@PinCode", branch.PinCode);
+            cmd.Parameters.AddWithValue("@LandNumber", branch.LandNumber);
+            cmd.Parameters.AddWithValue("@MobNumber", branch.MobNumber);
+            cmd.Parameters.AddWithValue("@IsActive", branch.IsActive); // ✅ toggle allowed
+            cmd.Parameters.AddWithValue("@IsParcelBooking", branch.IsParcelBooking);
+
+            cmd.ExecuteNonQuery();
+        }
+
     }
 }

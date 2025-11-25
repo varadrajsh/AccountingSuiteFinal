@@ -1,7 +1,7 @@
 ﻿@model AccountingSuite.Models.Master.Branch
 
 @{
-    ViewData["Title"] = "Create testing from vs code Branch";
+    ViewData["Title"] = "Create Branch";
 }
 
 @if (TempData["Message"] != null)
@@ -18,21 +18,19 @@
 <form asp-action="Create" method="post" class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
 
-    <div class="col-8">
+    <div class="col-10">
 
- 
-    <div class="row mb-3">
-        <div class="">
+        <!-- State -->
+        <div class="col-md-12 mb-3">
             <label asp-for="StateId" class="form-label">State</label>
-            <select asp-for="StateId" asp-items="ViewBag.States" class="form-select"></select>
+            <select asp-for="StateId" asp-items="ViewBag.States" class="form-select">
+                <option value="">-- Select State --</option>
+            </select>
             <span asp-validation-for="StateId" class="text-danger"></span>
         </div>
-       
-       
-    </div>
 
+        <!-- Branch Code + Branch Name -->
         <div class="row mb-3">
-          
             <div class="col-md-6">
                 <label asp-for="BranchCode" class="form-label"></label>
                 <input asp-for="BranchCode" class="form-control" />
@@ -45,40 +43,41 @@
             </div>
         </div>
 
-    <div class="row mb-3">
+        <!-- Address + Email -->
+        <div class="row mb-3">
             <div class="col-md-6">
                 <label asp-for="Address" class="form-label"></label>
                 <input asp-for="Address" class="form-control" />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
-        <div class="col-md-6">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-     
-        <div class="col-md-6">
-            <label asp-for="PinCode" class="form-label"></label>
-            <input asp-for="PinCode" class="form-control" />
-            <span asp-validation-for="PinCode" class="text-danger"></span>
-        </div>
             <div class="col-md-6">
-                <label asp-for="Address" class="form-label"></label>
-                <input asp-for="Address" class="form-control" />
-                <span asp-validation-for="Address" class="text-danger"></span>
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-    </div>
-
-    <div class="row mb-3">
-           
-        <div class="col-md-6">
-            <label asp-for="MobNumber" class="form-label"></label>
-            <input asp-for="MobNumber" class="form-control" />
-            <span asp-validation-for="MobNumber" class="text-danger"></span>
         </div>
+
+        <!-- PinCode + LandNumber -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="PinCode" class="form-label"></label>
+                <input asp-for="PinCode" class="form-control" />
+                <span asp-validation-for="PinCode" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="LandNumber" class="form-label"></label>
+                <input asp-for="LandNumber" class="form-control" />
+                <span asp-validation-for="LandNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- MobNumber + ParcelBooking -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="MobNumber" class="form-label"></label>
+                <input asp-for="MobNumber" class="form-control" />
+                <span asp-validation-for="MobNumber" class="text-danger"></span>
+            </div>
             <div class="col-md-6">
                 <label asp-for="IsParcelBooking" class="form-label">Parcel Booking</label>
                 <select asp-for="IsParcelBooking" class="form-select">
@@ -87,14 +86,16 @@
                 </select>
                 <span asp-validation-for="IsParcelBooking" class="text-danger"></span>
             </div>
-    </div>
+        </div>
 
-    <div class="row mb-3">
-     
-    </div>
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-    </div>
+        <!-- Buttons -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-dark">Back to list</a>
+        </div>
     </div>
 </form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
