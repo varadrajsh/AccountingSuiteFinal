@@ -61,36 +61,6 @@
         Add State
     </button>
 </div>
-
-<!-- Table -->
-@* <div class="table-responsive">
-    <table class="table table-pill table-sm table-hover mt-2">
-        <thead>
-            <tr>
-                <th>State Name</th>
-                <th>Region</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                foreach (var s in Model)
-                {
-                    <tr>
-                        <td>@s.StateName</td>
-                        <td>@regions?.FirstOrDefault(r => r.RegionId == s.RegionId)?.RegionName</td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="3" class="text-center text-muted">No states found.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div> *@
 <!-- Table -->
 <div class="table-responsive">
     <table class="table table-pill table-sm table-hover mt-2">
