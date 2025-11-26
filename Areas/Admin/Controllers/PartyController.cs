@@ -2,6 +2,9 @@
 using AccountingSuite.Models.Common;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.SqlClient;
+
 
 namespace AccountingSuite.Areas.Admin.Controllers
 {
@@ -9,15 +12,17 @@ namespace AccountingSuite.Areas.Admin.Controllers
     public class PartyController : Controller
     {
         private readonly PartyRepository _repository;
-        public PartyController(PartyRepository partyRepository)
+        private readonly StateRepository _stateRepository;
+        public PartyController(PartyRepository partyRepository, StateRepository stateRepository)
         {
             _repository = partyRepository;
+            _stateRepository = stateRepository;
         }
 
         public IActionResult Index(string? searchTerm, int pageNumber = 1, int pageSize = 15)
         {
-            var parties = _repository.GetAll();
-
+            // var parties = _repository.GetAll();
+            var parties = _repository.GetAllWithState();
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 parties = parties.Where(p =>
@@ -34,41 +39,52 @@ namespace AccountingSuite.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            var states = _stateRepository.GetAll() ?? new List<State>();
+            ViewBag.States = new SelectList(states, "StateId", "StateName");
+            return View(new Party());
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Party party)
         {
-            if (!ModelState.IsValid) return View(party);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.States = new SelectList(_stateRepository.GetAll(), "StateId", "StateName");
+                return View(party);
+            }
 
             try
             {
-                var result = _repository.Create(party);
-                TempData["Message"] = $"Party created successfully with Code: {result.newCode}";
+                var (newId, newCode) = _repository.Create(party);
+                TempData["Message"] = $"Party created successfully with Code: {newCode}";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                //ModelState.AddModelError("", ex.Message);
-                TempData["Error"] = ex.Message; 
+                // Show on the same page
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.States = new SelectList(_stateRepository.GetAll(), "StateId", "StateName");
                 return View(party);
             }
         }
 
-        public IActionResult Details(int id)
-        {
-            var party = _repository.GetById(id);
-            if (party == null) return NotFound();
-            return PartialView("_Details", party);
-        }
 
+
+        [HttpGet]
         public IActionResult Edit(int id)
         {
             var party = _repository.GetById(id);
             if (party == null) return NotFound();
+
+            var state = _stateRepository.GetById(party.StateId);
+            ViewBag.StateName = state?.StateName ?? "";
+
             return PartialView("_Edit", party);
         }
+
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -86,7 +102,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             {
 
                 //TempData["Error"] = ex.Message;
-                ModelState.AddModelError("",ex.Message);
+                ModelState.AddModelError("", ex.Message);
                 return PartialView("_Edit", party);
             }
         }

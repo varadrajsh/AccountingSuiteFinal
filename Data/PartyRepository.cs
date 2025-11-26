@@ -41,35 +41,61 @@ namespace AccountingSuite.Data
             return list;
         }
 
+        public IEnumerable<Party> GetAllWithState()
+        {
+            using var conn = _db.GetConnection();
+            using var cmd = _db.CreateCommand(conn, "spParty_GetAllWithState");
+            using var reader = cmd.ExecuteReader();
+            var list = new List<Party>();
+
+            while (reader.Read())
+            {
+                Enum.TryParse<Party.PartyTypeEnum>(reader["PartyType"].ToString(), out var partyType);
+
+                list.Add(new Party
+                {
+                    PartyId = Convert.ToInt32(reader["PartyId"]),
+                    PartyCode = reader["PartyCode"].ToString()!,
+                    Name = reader["Name"].ToString()!,
+                    PartyType = partyType,
+                    GSTIN = reader["GSTIN"] as string,
+                    Address = reader["Address"] as string,
+                    ContactNumber = reader["ContactNumber"] as string,
+                    Email = reader["Email"] as string,
+                    IsActive = Convert.ToBoolean(reader["IsActive"]),
+                    StateId = Convert.ToInt32(reader["StateId"]),
+                    StateName = reader["StateName"].ToString()!   // ✅ populated from join
+                });
+            }
+            return list;
+        }
+
         public (int newId, string newCode) Create(Party party)
         {
             using var conn = _db.GetConnection();
             using var cmd = _db.CreateCommand(conn, "spParty_Insert");
 
-            _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 100);
+            _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 200);
             _db.AddParameter(cmd, "@PartyType", SqlDbType.NVarChar, party.PartyType.ToString(), 20);
-            _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 15);
-            _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, party.Address, 250);
-            _db.AddParameter(cmd, "@ContactNumber", SqlDbType.NVarChar, party.ContactNumber, 20);
+            _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 50);
+            _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, party.Address, 500);
+            _db.AddParameter(cmd, "@ContactNumber", SqlDbType.NVarChar, party.ContactNumber, 50);
             _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, party.Email, 100);
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, party.IsActive);
+            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, party.StateId);
 
-            try
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
             {
-                using var reader = cmd.ExecuteReader();
-                if (!reader.Read())
-                    throw new Exception("Insert failed: no result returned.");
-
                 return (
                     Convert.ToInt32(reader["NewPartyId"]),
                     reader["NewPartyCode"].ToString()!
                 );
             }
-            catch (SqlException ex)
-            {
-                throw new Exception($"Error during Create: {ex.Message}", ex);
-            }
+            throw new Exception("Insert failed: no result returned.");
         }
+
+
 
         public (int updatedId, string updatedCode) Update(Party party)
         {
@@ -85,6 +111,7 @@ namespace AccountingSuite.Data
             _db.AddParameter(cmd, "@ContactNumber", SqlDbType.NVarChar, party.ContactNumber, 20);
             _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, party.Email, 100);
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, party.IsActive);
+            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, party.StateId);
 
             try
             {

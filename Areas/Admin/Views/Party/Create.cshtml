@@ -1,85 +1,75 @@
-﻿@using static AccountingSuite.Models.Master.Party
-@model AccountingSuite.Models.Master.Party
-
+﻿@model AccountingSuite.Models.Master.Party
 @{
-    ViewData["Title"] = "Create";
+    Layout = "_Layout";
 }
-@if (TempData["Error"] != null)
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
+        @TempData["ErrorMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<div class="row g-3">
-    <div class="col-8">
-        <div class="card">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">Create Party</h5>
-                <small class="text-body-secondary float-end">Default label</small>
-            </div>
-            <div class="card-body g-3">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                    <div class="form-group mt-3">
-                        <label asp-for="Name" class="form-label"></label>
-                        <input asp-for="Name" class="form-control" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
 
-                    <div class="form-group mt-3">
-                        <label asp-for="PartyType" class="form-label"></label>
-                        <select asp-for="PartyType" class="form-select"
-                                asp-items="Html.GetEnumSelectList<PartyTypeEnum>()">
-                        </select>
-                        <span asp-validation-for="PartyType" class="text-danger"></span>
-                    </div>
+    <table class="table table-bordered table-striped">
+        <tbody>
+            <tr>
+                <th>Name</th>
+                <td><input asp-for="Name" class="form-control" /></td>
+            </tr>
+            <tr>
+                <th>Party Type</th>
+                <td>
+                    <select asp-for="PartyType" class="form-select">
+                        <option value="Customer">Customer</option>
+                        <option value="Vendor">Vendor</option>
+                        <option value="Both">Both</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>GSTIN</th>
+                <td><input asp-for="GSTIN" class="form-control" /></td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td><input asp-for="Address" class="form-control" /></td>
+            </tr>
+            <tr>
+                <th>Contact Number</th>
+                <td><input asp-for="ContactNumber" class="form-control" /></td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td><input asp-for="Email" class="form-control" /></td>
+            </tr>
+            <tr>
+                <th>Active</th>
+                <td><input asp-for="IsActive" type="checkbox" /></td>
+            </tr>
+            <tr>
+                <th>State</th>
+                <td>
+                    <select asp-for="StateId" class="form-select" asp-items="ViewBag.States">
+                        <option value="">-- Select State --</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-                    <div class="form-group mt-3">
-                        <label asp-for="GSTIN" class="form-label"></label>
-                        <input asp-for="GSTIN" class="form-control" />
-                        <span asp-validation-for="GSTIN" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <label asp-for="Address" class="form-label"></label>
-                        <input asp-for="Address" class="form-control" />
-                        <span asp-validation-for="Address" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <label asp-for="ContactNumber" class="form-label"></label>
-                        <input asp-for="ContactNumber" class="form-control" />
-                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" asp-for="IsActive" />
-                        <label asp-for="IsActive" class="form-check-label"></label>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <input type="submit" value="Create" class="btn btn-primary" />
-                        <a class="btn btn-dark" asp-action="Index">Back to List</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-outline-dark">Cancel</a>
+</form>

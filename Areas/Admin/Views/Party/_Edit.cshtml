@@ -35,6 +35,18 @@
                 </td>
             </tr>
             <tr>
+                <th>State</th>
+                <td>
+                    <!-- Hidden StateId so it posts back -->
+                    <input asp-for="StateId" type="hidden" />
+
+                    <!-- Disabled textbox showing StateName -->
+                    <input type="text" class="form-control" value="@ViewBag.StateName" disabled />
+                </td>
+            </tr>
+
+
+            <tr>
                 <th>GSTIN</th>
                 <td>
                     <input asp-for="GSTIN" class="form-control" />

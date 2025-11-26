@@ -1,24 +1,46 @@
-﻿namespace AccountingSuite.Models.Master
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace AccountingSuite.Models.Master
 {
     public class Party
     {
         public int PartyId { get; set; }
 
-        public string PartyCode { get; set; } = string.Empty;
+        public string PartyCode { get; set; }
 
-        public string Name { get; set; } = string.Empty;
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; }
 
-        public enum PartyTypeEnum { Customer, Vendor, Both }
-        public PartyTypeEnum PartyType { get; set; } = PartyTypeEnum.Customer;
+        [Required]
+        public PartyTypeEnum PartyType { get; set; }
 
-        public string GSTIN { get; set; } = string.Empty;
+        [StringLength(15)]
+        public string GSTIN { get; set; }
 
-        public string Address { get; set; } = string.Empty;
+        [StringLength(250)]
+        public string Address { get; set; }
 
-        public string ContactNumber { get; set; } = string.Empty;
+        [StringLength(20)]
+        public string ContactNumber { get; set; }
 
-        public string Email { get; set; } = string.Empty;
+        [EmailAddress]
+        [StringLength(100)]
+        public string Email { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
+
+        [Required(ErrorMessage = "Please select a State.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid State.")]
+        public int StateId { get; set; }
+
+        public string StateName { get; set; }
+
+        public enum PartyTypeEnum
+        {
+            Customer,
+            Vendor,
+            Both
+        }
     }
 }
