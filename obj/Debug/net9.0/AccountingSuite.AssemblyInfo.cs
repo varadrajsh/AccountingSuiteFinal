@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AccountingSuite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+98cec4f692f61449ebb1d0de586f72bf7db579fc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f76d6717b33ffca268b0729114e8747bcb885994")]
 [assembly: System.Reflection.AssemblyProductAttribute("AccountingSuite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AccountingSuite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
