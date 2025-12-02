@@ -22,8 +22,7 @@ namespace AccountingSuite.Data
 
             while (reader.Read())
             {
-                var partyTypeStr = reader["PartyType"].ToString();
-                Enum.TryParse<PartyTypeEnum>(partyTypeStr, out var partyType);
+                Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
                 list.Add(new Party
                 {
@@ -50,7 +49,7 @@ namespace AccountingSuite.Data
 
             while (reader.Read())
             {
-                Enum.TryParse<Party.PartyTypeEnum>(reader["PartyType"].ToString(), out var partyType);
+                Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
                 list.Add(new Party
                 {
@@ -64,7 +63,7 @@ namespace AccountingSuite.Data
                     Email = reader["Email"] as string,
                     IsActive = Convert.ToBoolean(reader["IsActive"]),
                     StateId = Convert.ToInt32(reader["StateId"]),
-                    StateName = reader["StateName"].ToString()!   // ✅ populated from join
+                    StateName = reader["StateName"].ToString()!
                 });
             }
             return list;
@@ -75,11 +74,12 @@ namespace AccountingSuite.Data
             using var conn = _db.GetConnection();
             using var cmd = _db.CreateCommand(conn, "spParty_Insert");
 
-            _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 200);
+            // Align parameter sizes with model annotations
+            _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 100);
             _db.AddParameter(cmd, "@PartyType", SqlDbType.NVarChar, party.PartyType.ToString(), 20);
-            _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 50);
-            _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, party.Address, 500);
-            _db.AddParameter(cmd, "@ContactNumber", SqlDbType.NVarChar, party.ContactNumber, 50);
+            _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 15);
+            _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, party.Address, 250);
+            _db.AddParameter(cmd, "@ContactNumber", SqlDbType.NVarChar, party.ContactNumber, 20);
             _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, party.Email, 100);
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, party.IsActive);
             _db.AddParameter(cmd, "@StateId", SqlDbType.Int, party.StateId);
@@ -94,8 +94,6 @@ namespace AccountingSuite.Data
             }
             throw new Exception("Insert failed: no result returned.");
         }
-
-
 
         public (int updatedId, string updatedCode) Update(Party party)
         {
@@ -126,7 +124,8 @@ namespace AccountingSuite.Data
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Error during Update: {ex.Message}", ex);
+                // Wrap with friendly message mapping point (you can plug in your mapper here)
+                throw new Exception("Unable to update Party. Please check inputs or duplicates.", ex);
             }
         }
 
@@ -139,7 +138,7 @@ namespace AccountingSuite.Data
             using var reader = cmd.ExecuteReader();
             if (!reader.Read()) return null;
 
-            Enum.TryParse<PartyTypeEnum>(reader["PartyType"].ToString(), out var partyType);
+            Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
             return new Party
             {
@@ -151,7 +150,9 @@ namespace AccountingSuite.Data
                 Address = reader["Address"] as string,
                 ContactNumber = reader["ContactNumber"] as string,
                 Email = reader["Email"] as string,
-                IsActive = Convert.ToBoolean(reader["IsActive"])
+                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                StateId = reader["StateId"] is DBNull ? 0 : Convert.ToInt32(reader["StateId"]),
+                StateName = reader["StateName"] as string
             };
         }
 
@@ -161,13 +162,10 @@ namespace AccountingSuite.Data
             using var cmd = _db.CreateCommand(conn, "spParty_Delete");
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, id);
 
-            try
+            int rows = _db.ExecuteNonQuery(cmd);
+            if (rows == 0)
             {
-                cmd.ExecuteNonQuery();
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception($"Error during Delete: {ex.Message}", ex);
+                throw new Exception("Delete failed: Party not found or already deleted.");
             }
         }
     }

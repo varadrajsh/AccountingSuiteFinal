@@ -1,6 +1,5 @@
 ﻿@model AccountingSuite.Models.Common.PaginatedList<AccountingSuite.Models.Master.Party>
 
-
 @{
     ViewData["Title"] = "Admin - Parties";
 }
@@ -19,20 +18,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-    
 
 <div class="d-flex justify-content-between align-items-end mb-2">
-    <!-- Left block: Party List + Add Party -->
     <div class="d-flex align-items-end gap-2">
         <h2 class="mb-0">Party List</h2>
         <a class="btn btn-primary btn-sm" asp-action="Create">Add Party</a>
     </div>
 
-    <!-- Right block: Search Party form -->
     <div class="w-50">
         <form asp-action="Index" method="get" class="d-flex gap-2" id="searchForm">
             <input type="text" id="searchTerm" name="searchTerm" class="form-control form-control-sm border-dark"
-                   placeholder="Enter keywords to get Party Details" value="@ViewData["CurrentFilter"]" />
+                placeholder="Enter keywords to get Party Details" value="@ViewData["CurrentFilter"]" />
             <button type="submit" class="btn btn-sm btn-primary">Search</button>
             <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Reset</a>
         </form>
@@ -50,6 +46,37 @@
     </ol>
 </nav>
 
+<!-- Party Action buttons -->
+<div class="d-flex flex-wrap gap-2 mb-3 w-100">
+    <!-- State filter + View Party -->
+    <form asp-action="Index" method="get" class="d-flex gap-2 w-50">
+        @* <select name="stateId" class="form-select form-select-sm border-dark w-100">
+            <option value="">-- Select State --</option>
+            @if (ViewBag.States != null)
+            {
+                foreach (var s in (IEnumerable<AccountingSuite.Models.Master.State>)ViewBag.States)
+                {
+                    <option value="@s.StateId">@s.StateName</option>
+                }
+            }
+        </select> *@
+        <select name="stateId" asp-items="ViewBag.States" class="form-select form-select-sm border-dark w-100">
+    <option value="">-- Select State --</option>
+</select>
+        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Parties</button>
+    </form>
+
+    <!-- View All Parties -->
+    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Parties</a>
+
+    <!-- Add Party (modal trigger) -->
+  <a class="btn btn-primary btn-sm" asp-action="Create">Add Party</a>
+</div>
+
+
+
+
+
 <div class="table-responsive">
     <table class="table table-pill table-sm table-hover mt-2">
         <thead>
@@ -59,7 +86,7 @@
                 <th>Party Type</th>
                 <th>GSTIN</th>
                 <th>Contact Number</th>
-                <th>State</th> <!-- ✅ replaced Email -->
+                <th>State</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -70,10 +97,11 @@
                 <tr>
                     <td>@p.PartyCode</td>
                     <td>@p.Name</td>
-                    <td>@p.PartyType</td>
+                    <td>@(p.PartyType == AccountingSuite.Models.Master.Party.PartyTypeEnum.Both ? "Customer & Vendor" :
+                                            p.PartyType.ToString())</td>
                     <td>@p.GSTIN</td>
                     <td>@p.ContactNumber</td>
-                    <td>@p.StateName</td> <!-- ✅ show StateName -->
+                    <td>@p.StateName</td>
                     <td>
                         @if (p.IsActive)
                         {
@@ -85,22 +113,14 @@
                         }
                     </td>
                     <td>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-0">
-                                <li class="breadcrumb-item">
-                                    <a href="javascript:void(0)" class="text-primary" data-bs-toggle="modal"
-                                       data-bs-target="#detailsModal" onclick="loadDetails(@p.PartyId)">Details</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a href="@Url.Action("Edit", "Party", new { area = "Admin", id = p.PartyId })"
-                                       class="text-secondary edit-party">Edit</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a href="javascript:void(0)" class="text-danger" data-bs-toggle="modal"
-                                       data-bs-target="#deleteModal" onclick="loadDelete(@p.PartyId)">Delete</a>
-                                </li>
-                            </ol>
-                        </nav>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="javascript:void(0)" class="btn btn-link text-primary"
+                                onclick="loadDetails(@p.PartyId)">Details</a>
+                            <a href="@Url.Action("Edit", "Party", new { area = "Admin", id = p.PartyId })"
+                                class="btn btn-link text-secondary edit-party">Edit</a>
+                            <a href="javascript:void(0)" class="btn btn-link text-danger"
+                                onclick="loadDelete(@p.PartyId)">Delete</a>
+                        </div>
                     </td>
                 </tr>
             }
@@ -108,15 +128,15 @@
     </table>
 </div>
 
-
-<!-- Pagination -->
 <div class="d-flex justify-content-center align-items-center gap-3 mt-3">
     @if (Model.HasPreviousPage)
     {
-        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">&lt;Prev</a>
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)"
+            asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">&lt;Prev</a>
     }
     else
     {
+
         <span class="text-muted">&lt;Prev</span>
     }
 
@@ -127,104 +147,89 @@
         }
         else
         {
+
             <span>Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records</span>
         }
     </span>
 
     @if (Model.HasNextPage)
     {
-        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">Next&gt;</a>
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)"
+            asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">Next&gt;</a>
     }
     else
     {
+
         <span class="text-muted">Next&gt;</span>
     }
 </div>
 
-<!-- Modals -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body" id="detailsContent"></div></div></div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="detailsContent"></div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="partyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body" id="modalBody"></div></div></div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content"><div class="modal-body" id="deleteContent"></div></div></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body" id="deleteContent"></div>
+        </div>
+    </div>
 </div>
 
+
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
-    
-        function loadDetails(id) {
-            $("#detailsContent").load('/Admin/Party/Details/' + id);
-        }
-        function loadDelete(id) {
-            $("#deleteContent").load('/Admin/Party/Delete/' + id);
-        }
-
-        // ✅ Edit modal AJAX
-        $(document).on("click", ".edit-party", function (e) {
-            e.preventDefault();
-            var url = $(this).attr("href");
-            $.get(url, function (data) {
-                $("#modalBody").html(data);
-                $("#partyModal").modal("show");
+        function loadDetails(partyId) {
+            $.get('/Admin/Party/Details/' + partyId, function (data) {
+                $('#detailsContent').html(data);
+                $('#detailsModal').modal('show');
+            }).fail(function () {
+                alert('Unable to load Party details.');
             });
-        });
+        }
 
-        $(document).on("submit", "#editForm", function (e) {
+        function loadDelete(partyId) {
+            $.get('/Admin/Party/Delete/' + partyId, function (data) {
+                $('#deleteContent').html(data);
+                $('#deleteModal').modal('show');
+            }).fail(function () {
+                alert('Unable to load delete confirmation.');
+            });
+        }
+
+         $(document).on("submit", "#deleteForm", function (e) {
             e.preventDefault();
             var form = $(this);
             $.ajax({
                 url: form.attr("action"),
-                type: form.attr("method"),
+                type: "POST",
                 data: form.serialize(),
                 success: function (response) {
                     if (response.success) {
-                        $("#partyModal").modal("hide");
-                        location.reload();
+                        $('#deleteModal').modal('hide');
+                        location.reload(); // refresh table
                     } else {
-                        $("#modalBody").html(response);
-                    }
-                }
-            });
-        });
-
-        // ✅ Delete modal AJAX
-        $(document).on("submit", "#deleteForm", function (e) {
-            e.preventDefault();
-            var form = $(this);
-            $.ajax({
-                url: form.attr("action"),
-                type: form.attr("method"),
-                data: form.serialize(),
-                success: function (response) {
-                    if (response.success) {
-                        $("#deleteModal").modal("hide");
-                        location.reload();
-                    } else {
-                        alert(response.message || 'Delete failed.');
+                        alert(response.message);
                     }
                 },
                 error: function () {
-                    alert('Failed to delete.');
+                    alert("Error deleting Party.");
                 }
             });
-        });
-
-        // ✅ Focus search input on page load
-        $(document).ready(function () {
-            $('#searchTerm').focus();
-        });
-
-        // ✅ ESC key clears search box and reloads full Party list
-        $(document).on('keydown', function (e) {
-            if (e.key === "Escape") {
-                $('#searchTerm').val('');
-                $('#searchForm').submit();
-            }
         });
     </script>
 }

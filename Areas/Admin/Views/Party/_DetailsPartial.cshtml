@@ -1,0 +1,60 @@
+﻿@model AccountingSuite.Models.Master.Party
+
+<h2>Party Details</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <tbody>
+            <tr>
+                <th scope="row">Party Code</th>
+                <td>@Model.PartyCode</td>
+            </tr>
+            <tr>
+                <th scope="row">Name</th>
+                <td>@Model.Name</td>
+            </tr>
+            <tr>
+                <th scope="row">Party Type</th>
+                <td>@Model.PartyType</td>
+            </tr>
+            <tr>
+                <th scope="row">GSTIN</th>
+                <td>@Model.GSTIN</td>
+            </tr>
+            <tr>
+                <th scope="row">Address</th>
+                <td>@Model.Address</td>
+            </tr>
+            <tr>
+                <th scope="row">Contact Number</th>
+                <td>@Model.ContactNumber</td>
+            </tr>
+            <tr>
+                <th scope="row">Email</th>
+                <td>@Model.Email</td>
+            </tr>
+            <tr>
+                <th scope="row">State</th>
+                <td>@Model.StateName</td>
+            </tr>
+            <tr>
+                <th scope="row">Active</th>
+                <td>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactive</span>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex gap-2 mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.PartyId" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-dark">Back to list</a>
+</div>

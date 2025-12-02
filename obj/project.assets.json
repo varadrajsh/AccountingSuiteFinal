@@ -6570,11 +6570,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/AccountingSuite.csproj",
+      "projectUniqueName": "/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/AccountingSuite.csproj",
       "projectName": "AccountingSuite",
-      "projectPath": "/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/AccountingSuite.csproj",
+      "projectPath": "/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/AccountingSuite.csproj",
       "packagesPath": "/Users/varadrajsh/.nuget/packages/",
-      "outputPath": "/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/obj/",
+      "outputPath": "/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/varadrajsh/.nuget/NuGet/NuGet.Config"

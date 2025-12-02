@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "M++pHwKmGlc=",
+  "dgSpecHash": "nlNyXf9v4Dc=",
   "success": true,
-  "projectFilePath": "/Users/varadrajsh/Documents/Git_Final/AccountingSuiteFinal/AccountingSuite.csproj",
+  "projectFilePath": "/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/AccountingSuite.csproj",
   "expectedPackageFiles": [
     "/Users/varadrajsh/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/varadrajsh/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",

@@ -1,10 +1,10 @@
 ﻿using AccountingSuite.Data;
+using AccountingSuite.Infrastructure;
 using AccountingSuite.Models.Common;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
-
 
 namespace AccountingSuite.Areas.Admin.Controllers
 {
@@ -13,25 +13,42 @@ namespace AccountingSuite.Areas.Admin.Controllers
     {
         private readonly PartyRepository _repository;
         private readonly StateRepository _stateRepository;
+
         public PartyController(PartyRepository partyRepository, StateRepository stateRepository)
         {
             _repository = partyRepository;
             _stateRepository = stateRepository;
         }
 
+        private void PopulateStatesDropdown()
+        {
+            var states = _stateRepository.GetAll() ?? new List<State>();
+            ViewBag.States = new SelectList(states, "StateId", "StateName");
+        }
+
+        private void PopulatePartyTypes()
+        {
+            var types = Enum.GetValues(typeof(Party.PartyTypeEnum))
+                            .Cast<Party.PartyTypeEnum>()
+                            .Select(t => new SelectListItem { Text = t.ToString(), Value = t.ToString() })
+                            .ToList();
+            ViewBag.PartyTypes = types;
+        }
+
         public IActionResult Index(string? searchTerm, int pageNumber = 1, int pageSize = 15)
         {
-            // var parties = _repository.GetAll();
             var parties = _repository.GetAllWithState();
-            if (!string.IsNullOrEmpty(searchTerm))
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 parties = parties.Where(p =>
-                    p.PartyCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                    (!string.IsNullOrEmpty(p.PartyCode) && p.PartyCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(p.Name) && p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 );
                 ViewData["CurrentFilter"] = searchTerm;
             }
-
+            
+            PopulateStatesDropdown();
             var paginatedList = PaginatedList<Party>.Create(parties, pageNumber, pageSize);
             return View(paginatedList);
         }
@@ -39,9 +56,9 @@ namespace AccountingSuite.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            var states = _stateRepository.GetAll() ?? new List<State>();
-            ViewBag.States = new SelectList(states, "StateId", "StateName");
-            return View(new Party());
+            PopulateStatesDropdown();
+            PopulatePartyTypes();
+            return View(new Party { IsActive = true });
         }
 
         [HttpPost]
@@ -50,7 +67,8 @@ namespace AccountingSuite.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.States = new SelectList(_stateRepository.GetAll(), "StateId", "StateName");
+                PopulateStatesDropdown();
+                PopulatePartyTypes();
                 return View(party);
             }
 
@@ -60,59 +78,79 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 TempData["Message"] = $"Party created successfully with Code: {newCode}";
                 return RedirectToAction("Index");
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
-                // Show on the same page
-                ModelState.AddModelError("", ex.Message);
-                ViewBag.States = new SelectList(_stateRepository.GetAll(), "StateId", "StateName");
+                SqlErrorMapper.Map(ex, ModelState);
+                PopulateStatesDropdown();
+                PopulatePartyTypes();
+                return View(party);
+            }
+        }
+
+        // GET: Party/Edit/5
+        public IActionResult Edit(int id)
+        {
+            var party = _repository.GetById(id);
+            if (party == null)
+            {
+                TempData["Error"] = "Party not found.";
+                return RedirectToAction("Index");
+            }
+
+            PopulateStatesDropdown();
+            PopulatePartyTypes();
+            return View(party);
+        }
+
+        // POST: Party/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Party party)
+        {
+            if (!ModelState.IsValid)
+            {
+                PopulateStatesDropdown();
+                PopulatePartyTypes();
+                return View(party);
+            }
+
+            try
+            {
+                _repository.Update(party); // Update includes IsActive toggle
+                TempData["Message"] = "Party updated successfully.";
+                return RedirectToAction("Index");
+            }
+            catch (SqlException ex)
+            {
+                // Map SQL constraint errors to field-level messages
+                SqlErrorMapper.Map(ex, ModelState);
+
+                PopulateStatesDropdown();
+                PopulatePartyTypes();
                 return View(party);
             }
         }
 
 
-
-        [HttpGet]
-        public IActionResult Edit(int id)
+        // GET: Party/Details/5
+        public IActionResult Details(int id)
         {
             var party = _repository.GetById(id);
             if (party == null) return NotFound();
 
-            var state = _stateRepository.GetById(party.StateId);
-            ViewBag.StateName = state?.StateName ?? "";
-
-            return PartialView("_Edit", party);
+            return PartialView("_DetailsPartial", party); // 👈 return partial
         }
 
-
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(Party party)
-        {
-            if (!ModelState.IsValid) return PartialView("_Edit", party);
-
-            try
-            {
-                var result = _repository.Update(party);
-                TempData["Message"] = "Party Updated successfully.";
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-
-                //TempData["Error"] = ex.Message;
-                ModelState.AddModelError("", ex.Message);
-                return PartialView("_Edit", party);
-            }
-        }
+        // GET: Party/Delete/5
         public IActionResult Delete(int id)
         {
             var party = _repository.GetById(id);
             if (party == null) return NotFound();
-            return PartialView("_Delete", party);
+
+            return PartialView("_DeletePartial", party); // 👈 return partial
         }
 
+        // POST: Party/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int PartyId)
@@ -121,13 +159,15 @@ namespace AccountingSuite.Areas.Admin.Controllers
             {
                 _repository.Delete(PartyId);
                 TempData["Message"] = "Party deleted successfully.";
-                return Json(new { success = true });
+                return RedirectToAction("Index");
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
-                TempData["Error"] = ex.Message; // ✅ store error in TempData
-                return Json(new { success = false, message = ex.Message });
+                SqlErrorMapper.Map(ex, ModelState);
+                TempData["Error"] = "Unable to delete Party due to database constraint.";
+                return RedirectToAction("Index");
             }
+
         }
     }
 }

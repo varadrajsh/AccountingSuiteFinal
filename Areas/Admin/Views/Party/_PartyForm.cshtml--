@@ -1,0 +1,70 @@
+﻿@model AccountingSuite.Models.Master.Party
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="col-6">
+    <div class="row g-3">
+        <div>
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label asp-for="PartyType" class="form-label"></label>
+            <select asp-for="PartyType" class="form-select" asp-items="ViewBag.PartyTypes"></select>
+            <span asp-validation-for="PartyType" class="text-danger"></span>
+        </div>
+
+        <div >
+            <label asp-for="GSTIN" class="form-label"></label>
+            <input asp-for="GSTIN" class="form-control" />
+            <span asp-validation-for="GSTIN" class="text-danger"></span>
+        </div>
+
+        <div >
+            <label asp-for="ContactNumber" class="form-label"></label>
+            <input asp-for="ContactNumber" class="form-control" />
+            <span asp-validation-for="ContactNumber" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label asp-for="StateId" class="form-label"></label>
+            <select asp-for="StateId" class="form-select" asp-items="ViewBag.States">
+                <option value="">-- Select State --</option>
+            </select>
+            <span asp-validation-for="StateId" class="text-danger"></span>
+        </div>
+
+        <div>
+            <div class="form-check mt-4">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+</div>
