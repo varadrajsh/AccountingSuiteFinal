@@ -75,8 +75,6 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return View(branch);
         }
 
-
-
         [HttpPost]
         public IActionResult UpdateStatus(int branchId, bool isActive)
         {
@@ -153,7 +151,5 @@ namespace AccountingSuite.Areas.Admin.Controllers
             // Partial must exist in Areas/Admin/Views/Branch/_BranchTablePartial.cshtml
             return PartialView("_BranchTablePartial", paginated);
         }
-
-
     }
 }

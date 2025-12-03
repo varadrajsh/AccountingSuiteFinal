@@ -80,12 +80,40 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvQWRtaW4vVmlld3MvU3RhdGUvX0VkaXRQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Areas/SuperAdmin/Views/AccountHead/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU3VwZXJBZG1pbi9WaWV3cy9BY2NvdW50SGVhZC9DcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Areas/SuperAdmin/Views/AccountHead/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXMvU3VwZXJBZG1pbi9WaWV3cy9BY2NvdW50SGVhZC9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Areas/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Areas/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Template/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = VGVtcGxhdGUvQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Template/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = VGVtcGxhdGUvRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Template/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = VGVtcGxhdGUvRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Template/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = VGVtcGxhdGUvRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Template/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = VGVtcGxhdGUvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/Views/Home/Index.cshtml]

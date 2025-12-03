@@ -12,6 +12,7 @@ public static class SqlErrorMapper
         foreach (SqlError err in ex.Errors)
         {
             var mapped = MapParty(err)
+                        ?? MapAccountHead(err)
                       // ?? MapJournal(err)
                       // ?? MapLedger(err)
                       // ?? MapInvoice(err)
@@ -24,6 +25,7 @@ public static class SqlErrorMapper
         }
     }
 
+    //Party Model
     private static (string? Field, string Message)? MapParty(SqlError err)
     {
         var msg = err.Message;
@@ -48,6 +50,23 @@ public static class SqlErrorMapper
 
         return null;
     }
+
+    //Account Head Model
+      private static (string? Field, string Message)? MapAccountHead(SqlError err)
+        {
+            var msg = err.Message;
+
+            if (msg.Contains("UQ_AccountHead_Name"))
+                return ("AccountHeadName", "An Account Head with this Name already exists. Please enter a unique Name.");
+
+            if (msg.Contains("UQ_AccountHead_Type"))
+                return ("AccountHeadType", "This Account Head Type already exists. Please choose a different Type.");
+
+            if (msg.Contains("FK_AccountHead_Parent"))
+                return ("ParentAccountHeadId", "Invalid Parent Account Head selected. Please choose a valid parent.");
+
+            return null;
+        }
 
 }
 

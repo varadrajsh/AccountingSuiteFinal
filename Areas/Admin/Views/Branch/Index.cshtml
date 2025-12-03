@@ -177,19 +177,6 @@
 
 @section Scripts {
     <script>
-        // ✅ Focus search input on page load
-        $(document).ready(function () {
-            $('#searchTerm').focus();
-        });
-
-        // ✅ ESC key clears search box and reloads full Branch list
-        $(document).on('keydown', function (e) {
-            if (e.key === "Escape") {
-                $('#searchTerm').val('');
-                $('#searchForm').submit();
-            }
-        });
-
         function loadDetails(id) {
             $("#detailsContent").load('/Admin/Branch/Details/' + id);
         }

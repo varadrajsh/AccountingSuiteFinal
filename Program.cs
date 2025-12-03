@@ -12,6 +12,7 @@ builder.Services.AddScoped<PartyRepository>();
 builder.Services.AddScoped<RegionRepository>();
 builder.Services.AddScoped<StateRepository>();
 builder.Services.AddScoped<BranchRepository>();
+builder.Services.AddScoped<AccountHeadRepository>();
 
 
 

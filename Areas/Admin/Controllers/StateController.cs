@@ -18,21 +18,6 @@ namespace AccountingSuite.Areas.Admin.Controllers
             _stateRepo = stateRepo;
             _regionRepo = regionRepo;
         }
-
-        // ✅ List states by region
-        // public IActionResult Index(int? regionId)
-        // {
-        //     var regions = _regionRepo.GetAll();
-        //     ViewBag.Regions = regions;
-
-        //     IEnumerable<State> states = regionId.HasValue
-        //         ? _stateRepo.GetByRegion(regionId.Value)
-        //         : Enumerable.Empty<State>();
-
-        //     ViewBag.RegionId = regionId;
-        //     return View(states);
-        // }
-
         public IActionResult Index(int? regionId)
         {
             ViewBag.Regions = _regionRepo.GetAll();
@@ -49,10 +34,8 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 states = _stateRepo.GetAll();
                 ViewBag.RegionId = null;
             }
-
             return View(states);
         }
-
 
         // ✅ Show Create modal
         [HttpGet]
@@ -88,7 +71,5 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
             return RedirectToAction("Index", new { regionId });
         }
-
-
     }
 }

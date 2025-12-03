@@ -1,0 +1,53 @@
+﻿@model AccountingSuite.Models.Master.AccountHead
+
+@{
+    ViewData["Title"] = "Create Account Head";
+}
+
+<h2>Create New Account Head</h2>
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="col-10">
+
+        <!-- Account Head Name + Type -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="AccountHeadName" class="form-label"></label>
+                <input asp-for="AccountHeadName" class="form-control" />
+                <span asp-validation-for="AccountHeadName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="AccountHeadType" class="form-label"></label>
+                <select asp-for="AccountHeadType" class="form-select">
+                    <option value="">-- Select Type --</option>
+                    <option>Asset</option>
+                    <option>Liability</option>
+                    <option>Equity</option>
+                    <option>Income</option>
+                    <option>Expense</option>
+                </select>
+                <span asp-validation-for="AccountHeadType" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Parent Account Head -->
+        <div class="col-md-12 mb-3">
+            <label asp-for="ParentAccountHeadId" class="form-label"></label>
+            <select asp-for="ParentAccountHeadId" class="form-select">
+                <option value="">-- Select Parent Account Head --</option>
+                <!-- Populate dynamically from ViewBag or Model -->
+            </select>
+            <span asp-validation-for="ParentAccountHeadId" class="text-danger"></span>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-dark">Back to list</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

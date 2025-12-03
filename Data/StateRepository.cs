@@ -49,18 +49,6 @@ namespace AccountingSuite.Data
             }
             return list;
         }
-
-
-        // public int Insert(State state)
-        // {
-        //     using var conn = _db.GetConnection();
-        //     using var cmd = _db.CreateCommand(conn, "spState_Insert");
-        //     cmd.Parameters.AddWithValue("@StateName", state.StateName);
-        //     cmd.Parameters.AddWithValue("@RegionId", state.RegionId);
-
-        //     var result = cmd.ExecuteScalar();
-        //     return Convert.ToInt32(result); // new StateId
-        // }
         public int Insert(State state)
         {
             using var conn = _db.GetConnection();
@@ -77,9 +65,6 @@ namespace AccountingSuite.Data
 
             return Convert.ToInt32(result); // ✅ new StateId returned from SQL
         }
-
-
-
         public State? GetById(int id)
         {
             using var conn = _db.GetConnection();
@@ -98,7 +83,6 @@ namespace AccountingSuite.Data
             }
             return null;
         }
-
 
         public bool Exists(string stateName, int regionId)
         {

@@ -1,0 +1,139 @@
+﻿@using AccountingSuite.Models.Common
+@model PaginatedList<AccountingSuite.Models.Master.AccountHead>
+
+
+@{
+    ViewData["Title"] = "Account Head List";
+}
+
+<!-- Alerts -->
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        Please fix the errors and try again.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-end mb-2">
+    <div class="d-flex align-items-center gap-2">
+        <h2 class="mb-0">Account Head List</h2>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-area="SuperAdmin" asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Account Head List</li>
+    </ol>
+</nav>
+
+<!-- Action buttons -->
+<div class="d-flex flex-wrap gap-2 mb-3 w-100">
+    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Account Heads</a>
+    <a asp-action="Create" class="btn btn-sm btn-primary text-center text-nowrap">Add Account Head</a>
+</div>
+
+<!-- Table -->
+<div class="table-responsive">
+    <table class="table table-pill table-sm table-hover mt-2 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Account Head ID</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Parent</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold">@item.AccountHeadId</td>
+                    <td>@item.AccountHeadCode</td>
+                    <td>@item.AccountHeadName</td>
+                    <td>@item.AccountHeadType</td>
+                    <td>@(item.ParentAccountHeadId.HasValue ? item.ParentAccountHeadId.ToString() : "-")</td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                    <a asp-action="EditStatus" asp-route-id="@item.AccountHeadId" class="text-primary">Edit</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a asp-action="Details" asp-route-id="@item.AccountHeadId" class="text-primary">Details</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="javascript:void(0)" class="text-danger" onclick="showDelete()">Delete</a>
+                                </li>
+                            </ol>
+                        </nav>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">No Account Heads found</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+    @if (Model.HasPreviousPage)
+    {
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" class="text-primary">&lt;Prev</a>
+    }
+    else
+    {
+        <span class="text-muted">&lt;Prev</span>
+    }
+
+    <span class="fw-regular">
+        @if (Model.TotalCount == 0)
+        {
+            <span class="fw-semibold">No records found</span>
+        }
+        else
+        {
+            <span>Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records</span>
+        }
+    </span>
+
+    @if (Model.HasNextPage)
+    {
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" class="text-primary">Next&gt;</a>
+    }
+    else
+    {
+        <span class="text-muted">Next&gt;</span>
+    }
+</div>

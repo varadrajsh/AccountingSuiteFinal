@@ -2242,7 +2242,6 @@ C:/Users/varadraj/Downloads/Acc 24_11_2025 11.00pm/Acc/AccountSuite/obj/Debug/ne
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/scopedcss/bundle/AccountingSuite.styles.css
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/scopedcss/projectbundle/AccountingSuite.bundle.scp.css
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/knva06mxez-61n19gt1b8.gz
-/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/79j05aowvo-fr7q2aak1r.gz
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/r9gwkh8vdk-bqjiyaj88i.gz
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/ympupddwev-c2jlpeoesf.gz
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/3ex3j0ijdu-erw9l3u2r3.gz
@@ -2315,3 +2314,4 @@ C:/Users/varadraj/Downloads/Acc 24_11_2025 11.00pm/Acc/AccountSuite/obj/Debug/ne
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/AccountingSuite.genruntimeconfig.cache
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/ref/AccountingSuite.dll
 /Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/uyb91nasjb-p2iuo63f90.gz
+/Users/varadrajsh/Documents/Git_Final/Test/AccountingSuiteFinal/obj/Debug/net9.0/compressed/79j05aowvo-g4ij20eng5.gz

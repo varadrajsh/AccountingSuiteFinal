@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Create Item";
+}
+
+<h2>Create New Item</h2>
+
+<form method="post" class="needs-validation" novalidate>
+    <div class="col-10">
+
+        <!-- State -->
+        <div class="col-md-12 mb-3">
+            <label class="form-label">State</label>
+            <select class="form-select">
+                <option value="">-- Select State --</option>
+                <option>Karnataka</option>
+                <option>Maharashtra</option>
+            </select>
+            <span class="text-danger">Validation message</span>
+        </div>
+
+        <!-- Name + Type -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Name</label>
+                <input class="form-control" />
+                <span class="text-danger">Validation message</span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Type</label>
+                <select class="form-select">
+                    <option value="">-- Select Type --</option>
+                    <option>Asset</option>
+                    <option>Liability</option>
+                    <option>Equity</option>
+                    <option>Income</option>
+                    <option>Expense</option>
+                </select>
+                <span class="text-danger">Validation message</span>
+            </div>
+        </div>
+
+        <!-- GSTIN + Address -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">GSTIN</label>
+                <input class="form-control" />
+                <span class="text-danger">Validation message</span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Address</label>
+                <input class="form-control" />
+                <span class="text-danger">Validation message</span>
+            </div>
+        </div>
+
+        <!-- Contact Number + Email -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input class="form-control" />
+                <span class="text-danger">Validation message</span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input class="form-control" />
+                <span class="text-danger">Validation message</span>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-dark">Back to list</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <!-- Validation scripts placeholder -->
+}
