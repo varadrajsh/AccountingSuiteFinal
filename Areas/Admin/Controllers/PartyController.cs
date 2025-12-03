@@ -35,9 +35,17 @@ namespace AccountingSuite.Areas.Admin.Controllers
             ViewBag.PartyTypes = types;
         }
 
-        public IActionResult Index(string? searchTerm, int pageNumber = 1, int pageSize = 15)
+        public IActionResult Index(string? searchTerm, int? stateId, int pageNumber = 1, int pageSize = 15)
         {
             var parties = _repository.GetAllWithState();
+
+
+            if (stateId.HasValue && stateId.Value > 0)
+            {
+                parties = parties.Where(p => p.StateId == stateId.Value);
+                ViewData["SelectedState"] = stateId.Value;
+            }
+
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -47,7 +55,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 );
                 ViewData["CurrentFilter"] = searchTerm;
             }
-            
+
             PopulateStatesDropdown();
             var paginatedList = PaginatedList<Party>.Create(parties, pageNumber, pageSize);
             return View(paginatedList);

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Admin - Parties";
+    
 }
 
 @if (TempData["Message"] != null)
@@ -22,7 +23,6 @@
 <div class="d-flex justify-content-between align-items-end mb-2">
     <div class="d-flex align-items-end gap-2">
         <h2 class="mb-0">Party List</h2>
-        <a class="btn btn-primary btn-sm" asp-action="Create">Add Party</a>
     </div>
 
     <div class="w-50">
@@ -42,7 +42,7 @@
         </li>
         <li class="breadcrumb-item active" aria-current="page">
             Party List
-        </li>
+        </li>   
     </ol>
 </nav>
 
@@ -50,17 +50,7 @@
 <div class="d-flex flex-wrap gap-2 mb-3 w-100">
     <!-- State filter + View Party -->
     <form asp-action="Index" method="get" class="d-flex gap-2 w-50">
-        @* <select name="stateId" class="form-select form-select-sm border-dark w-100">
-            <option value="">-- Select State --</option>
-            @if (ViewBag.States != null)
-            {
-                foreach (var s in (IEnumerable<AccountingSuite.Models.Master.State>)ViewBag.States)
-                {
-                    <option value="@s.StateId">@s.StateName</option>
-                }
-            }
-        </select> *@
-        <select name="stateId" asp-items="ViewBag.States" class="form-select form-select-sm border-dark w-100">
+        <select name="stateId" asp-items="ViewBag.States" asp-for="@ViewData["SelectedState"]" class="form-select form-select-sm border-dark w-100 ">
     <option value="">-- Select State --</option>
 </select>
         <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Parties</button>
@@ -78,8 +68,8 @@
 
 
 <div class="table-responsive">
-    <table class="table table-pill table-sm table-hover mt-2">
-        <thead>
+    <table class="table table-pill table-sm table-hover mt-2 align-middle">
+        <thead class="table-light">
             <tr>
                 <th>Party Code</th>
                 <th>Name</th>
@@ -113,14 +103,23 @@
                         }
                     </td>
                     <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="javascript:void(0)" class="btn btn-link text-primary"
-                                onclick="loadDetails(@p.PartyId)">Details</a>
-                            <a href="@Url.Action("Edit", "Party", new { area = "Admin", id = p.PartyId })"
-                                class="btn btn-link text-secondary edit-party">Edit</a>
-                            <a href="javascript:void(0)" class="btn btn-link text-danger"
-                                onclick="loadDelete(@p.PartyId)">Delete</a>
-                        </div>
+                       <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                     <a href="javascript:void(0)"
+                                onclick="loadDetails(@p.PartyId)" class="text-primary">Details</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                     <a href="@Url.Action("Edit", "Party", new { area = "Admin", id = p.PartyId })"
+                                class="text-warning">Edit</a>
+                                </li>
+                                 <li class="breadcrumb-item">
+                                      <a href="javascript:void(0)" 
+                                onclick="loadDelete(@p.PartyId)" class="text-danger">Delete</a>
+                                </li> 
+                            </ol>
+                        </nav>
+                   
                     </td>
                 </tr>
             }
