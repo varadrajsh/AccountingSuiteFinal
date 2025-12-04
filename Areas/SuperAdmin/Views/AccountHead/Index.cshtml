@@ -1,11 +1,9 @@
 ﻿@using AccountingSuite.Models.Common
 @model PaginatedList<AccountingSuite.Models.Master.AccountHead>
 
-
 @{
     ViewData["Title"] = "Account Head List";
 }
-
 <!-- Alerts -->
 @if (TempData["Message"] != null)
 {
@@ -17,16 +15,17 @@
 @if (!ViewData.ModelState.IsValid)
 {
     <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-        Please fix the errors and try again.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-end mb-2">
-    <div class="d-flex align-items-center gap-2">
-        <h2 class="mb-0">Account Head List</h2>
-    </div>
+    <h2 class="mb-0">Account Head List</h2>
 </div>
 
 <!-- Breadcrumb -->
@@ -37,10 +36,15 @@
     </ol>
 </nav>
 
-<!-- Action buttons -->
-<div class="d-flex flex-wrap gap-2 mb-3 w-100">
-    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Account Heads</a>
-    <a asp-action="Create" class="btn btn-sm btn-primary text-center text-nowrap">Add Account Head</a>
+<!-- Account Lookup Input -->
+<div class="mb-3">
+    <form asp-action="Create" method="post" class="d-flex gap-2">
+        <input type="text" id="accountLookupName" name="AccountHeadName" class="form-control"
+            placeholder="Enter Account Head and select from list..." />
+        <input type="hidden" id="accountTypeHidden" name="AccountHeadType" />
+        <input type="hidden" id="lookupIdHidden" name="LookupId" />
+        <button type="submit" class="btn btn-primary">Add</button>
+    </form>
 </div>
 
 <!-- Table -->
@@ -48,60 +52,49 @@
     <table class="table table-pill table-sm table-hover mt-2 align-middle">
         <thead class="table-light">
             <tr>
-                <th>Account Head ID</th>
+                <th>ID</th>
                 <th>Code</th>
                 <th>Name</th>
                 <th>Type</th>
-                <th>Parent</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-        @if (Model.Any())
-        {
-            foreach (var item in Model)
+            @if (Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@item.AccountHeadId</td>
+                        <td>@item.AccountHeadCode</td>
+                        <td>@item.AccountHeadName</td>
+                        <td>@item.AccountHeadType</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-area="SuperAdmin" asp-controller="AccountHead" asp-action="Edit"
+                                asp-route-id="@item.AccountHeadId" class="btn btn-sm btn-primary">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td class="fw-bold">@item.AccountHeadId</td>
-                    <td>@item.AccountHeadCode</td>
-                    <td>@item.AccountHeadName</td>
-                    <td>@item.AccountHeadType</td>
-                    <td>@(item.ParentAccountHeadId.HasValue ? item.ParentAccountHeadId.ToString() : "-")</td>
-                    <td>
-                        @if (item.IsActive)
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactive</span>
-                        }
-                    </td>
-                    <td>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-0">
-                                <li class="breadcrumb-item">
-                                    <a asp-action="EditStatus" asp-route-id="@item.AccountHeadId" class="text-primary">Edit</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a asp-action="Details" asp-route-id="@item.AccountHeadId" class="text-primary">Details</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a href="javascript:void(0)" class="text-danger" onclick="showDelete()">Delete</a>
-                                </li>
-                            </ol>
-                        </nav>
-                    </td>
+                    <td colspan="6" class="text-center text-muted">No Account Heads found</td>
                 </tr>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="7" class="text-center text-muted">No Account Heads found</td>
-            </tr>
-        }
         </tbody>
     </table>
 </div>
@@ -137,3 +130,28 @@
         <span class="text-muted">Next&gt;</span>
     }
 </div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editAccountHeadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="editModalContent">
+            <!-- AJAX will inject _Edit.cshtml here -->
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // Account Head Keyword Search
+        $("#accountLookupName").autocomplete({
+            source: '@Url.Action("SearchAccountLookup", "AccountHead", new { area = "SuperAdmin" })',
+            minLength: 2,
+            select: function (event, ui) {
+                $("#accountLookupName").val(ui.item.accountHeadKeyword);
+                $("#accountTypeHidden").val(ui.item.accountTypeKeyword);
+                $("#lookupIdHidden").val(ui.item.lookupId);
+            }
+        });
+    </script>
+}

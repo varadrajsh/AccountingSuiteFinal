@@ -62,7 +62,7 @@ public class AccountHeadRepository
                 AccountHeadCode = reader["AccountHeadCode"].ToString()!,
                 AccountHeadName = reader["AccountHeadName"].ToString()!,
                 AccountHeadType = reader["AccountHeadType"].ToString()!,
-                ParentAccountHeadId = reader["ParentAccountHeadId"] 
+                ParentAccountHeadId = reader["ParentAccountHeadId"]
                     == DBNull.Value ? null : Convert.ToInt32(reader["ParentAccountHeadId"]),
                 IsActive = Convert.ToBoolean(reader["IsActive"])
             };
@@ -72,55 +72,97 @@ public class AccountHeadRepository
     //Insert AccountHead
     public async Task<(int newId, string newCode)> CreateAsync(AccountHead accountHead, ModelStateDictionary modelState)
     {
-        return await Task.Run(() =>
+        using var conn = _db.GetConnection();
+        using var cmd = _db.CreateCommand(conn, "spAccountHead_Insert");
+
+        _db.AddParameter(cmd, "@AccountHeadName", SqlDbType.NVarChar, accountHead.AccountHeadName, 100);
+        _db.AddParameter(cmd, "@AccountHeadType", SqlDbType.NVarChar, accountHead.AccountHeadType, 50);
+        _db.AddParameter(cmd, "@LookupId", SqlDbType.Int, accountHead.LookupId);
+        _db.AddParameter(cmd, "@ParentAccountHeadId", SqlDbType.Int, accountHead.ParentAccountHeadId);
+
+        try
         {
-            using var conn = _db.GetConnection();
-            using var cmd = _db.CreateCommand(conn, "spAccountHead_Insert");
-
-            _db.AddParameter(cmd, "@AccountHeadName", SqlDbType.NVarChar, accountHead.AccountHeadName, 100);
-            _db.AddParameter(cmd, "@AccountHeadType", SqlDbType.NVarChar, accountHead.AccountHeadType, 50);
-            _db.AddParameter(cmd, "@ParentAccountHeadId", SqlDbType.Int, accountHead.ParentAccountHeadId);
-
-            try
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                using var reader = cmd.ExecuteReader();
-                if (reader.Read())
-                {
-                    return (
-                        Convert.ToInt32(reader["NewAccountHeadId"]),
-                        reader["NewAccountHeadCode"].ToString()!
-                    );
-                }
-                throw new Exception("Insert failed: no result returned.");
+                return (
+                    Convert.ToInt32(reader["NewAccountHeadId"]),
+                    reader["NewAccountHeadCode"].ToString()!
+                );
             }
-            catch (SqlException ex)
-            {
-                SqlErrorMapper.Map(ex, modelState);
-                return (0, string.Empty);
-            }
-        });
+
+            modelState.AddModelError("", "Insert failed: no result returned.");
+            return (0, string.Empty);
+        }
+        catch (SqlException ex)
+        {
+            SqlErrorMapper.Map(ex, modelState);
+            return (0, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            modelState.AddModelError("", $"Unexpected error: {ex.Message}");
+            return (0, string.Empty);
+        }
     }
 
-    // Update only  Active / Inactive status
-    public async Task<bool> UpdateStatusAsync(int accountHeadId, bool isActive, ModelStateDictionary modelState)
+    public async Task<IEnumerable<AccountLookup>> SearchAccountLookupAsync(string term)
     {
-        return await Task.Run(() =>
+        using var conn = _db.GetConnection();
+        using var cmd = _db.CreateCommand(conn, "spAccountLookup_Search");
+
+        _db.AddParameter(cmd, "@SearchTerm", SqlDbType.NVarChar, term, 100);
+
+        var results = new List<AccountLookup>();
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
         {
-            using var conn = _db.GetConnection();
-            using var cmd = _db.CreateCommand(conn, "spAccountHead_UpdateStatus");
-
-            _db.AddParameter(cmd, "@AccountHeadId", SqlDbType.Int, accountHeadId);
-            _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, isActive);
-
-            try
+            results.Add(new AccountLookup
             {
-                return _db.ExecuteNonQuery(cmd)>0;
-            }
-            catch (SqlException ex)
-            {
-                SqlErrorMapper.Map(ex, modelState);
-                return false;
-            }
-        });
+                LookupId = Convert.ToInt32(reader["LookupId"]),
+                AccountHeadKeywords = reader["AccountHeadKeywords"].ToString()!,
+                AccountTypeKeywords = reader["AccountTypeKeywords"].ToString()!
+            });
+        }
+        return results;
+    }
+
+    public void Update(AccountHead accountHead)
+    {
+        using var conn = _db.GetConnection();
+        using var cmd = _db.CreateCommand(conn, "spAccountHead_Update");
+
+        _db.AddParameter(cmd, "@AccountHeadId", SqlDbType.Int, accountHead.AccountHeadId);
+        _db.AddParameter(cmd, "@AccountHeadName", SqlDbType.NVarChar, accountHead.AccountHeadName, 100);
+        _db.AddParameter(cmd, "@AccountHeadType", SqlDbType.NVarChar, accountHead.AccountHeadType, 50);
+        _db.AddParameter(cmd, "@ParentAccountHeadId", SqlDbType.Int, accountHead.ParentAccountHeadId);
+        _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, accountHead.IsActive);
+
+        try
+        {
+            cmd.ExecuteNonQuery();
+        }
+        catch (SqlException ex)
+        {
+            throw new Exception("Unable to update Account Head. Please check inputs or duplicates.", ex);
+        }
+    }
+
+    public void UpdateStatus(int accountHeadId, bool isActive)
+    {
+        using var conn = _db.GetConnection();
+        using var cmd = _db.CreateCommand(conn, "spAccountHead_UpdateStatus");
+
+        _db.AddParameter(cmd, "@AccountHeadId", SqlDbType.Int, accountHeadId);
+        _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, isActive);
+
+        try
+        {
+            cmd.ExecuteNonQuery();
+        }
+        catch (SqlException ex)
+        {
+            throw new Exception("Unable to update Account Head status.", ex);
+        }
     }
 }

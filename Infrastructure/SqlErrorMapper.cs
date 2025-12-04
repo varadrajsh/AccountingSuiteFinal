@@ -52,21 +52,24 @@ public static class SqlErrorMapper
     }
 
     //Account Head Model
-      private static (string? Field, string Message)? MapAccountHead(SqlError err)
-        {
-            var msg = err.Message;
+    private static (string? Field, string Message)? MapAccountHead(SqlError err)
+    {
+        var msg = err.Message;
 
-            if (msg.Contains("UQ_AccountHead_Name"))
-                return ("AccountHeadName", "An Account Head with this Name already exists. Please enter a unique Name.");
+        if (msg.Contains("UQ_AccountHead_Name"))
+            return ("AccountHeadName", "An Account Head with this Name already exists. Please enter a unique Name.");
 
-            if (msg.Contains("UQ_AccountHead_Type"))
-                return ("AccountHeadType", "This Account Head Type already exists. Please choose a different Type.");
+        if (msg.Contains("UQ_AccountHead_Type"))
+            return ("AccountHeadType", "This Account Head Type already exists. Please choose a different Type.");
 
-            if (msg.Contains("FK_AccountHead_Parent"))
-                return ("ParentAccountHeadId", "Invalid Parent Account Head selected. Please choose a valid parent.");
+        if (msg.Contains("UQ_AccountHead_NameTypeLookup"))
+            return ("AccountHeadName", "Duplicate entry: An Account Head with the same Name, Type, and Lookup already exists.");
 
-            return null;
-        }
+        if (msg.Contains("FK_AccountHead_Parent"))
+            return ("ParentAccountHeadId", "Invalid Parent Account Head selected. Please choose a valid parent.");
+
+        return null;
+    }
 
 }
 
