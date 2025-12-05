@@ -6,46 +6,48 @@ namespace AccountingSuite.Data.Repositories;
 
 public class DayLockRepository
 {  
-    private readonly DbHelper _db;
-    public DayLockRepository(DbHelper db)
+    private readonly DbHelperAsync _db;
+    public DayLockRepository(DbHelperAsync db)
     {
         _db = db;
     }
     
     // Lock a day
-    public void LockDay(int branchId, DateTime lockDate, int userId)
+    public async Task LockDayAsync(int branchId, DateTime lockDate, int userId)
     {
-        using var conn = _db.GetConnection();
+        using var conn = await _db.GetSqlConnectionAsync();
         using var cmd = _db.CreateCommand(conn, "spLockDay_insert");
 
         _db.AddParameter(cmd, "@branchId", SqlDbType.Int, branchId);
         _db.AddParameter(cmd, "@lockDate", SqlDbType.Date, lockDate);
         _db.AddParameter(cmd, "@userId", SqlDbType.Int, userId);
-        _db.ExecuteNonQuery(cmd);
+       
+       await _db.ExecuteNonQueryAsync(cmd);
     }
 
     // Unlock a day
-    public  void UnlockDay(int branchId, DateTime lockDate, int adminId)
+    public async Task UnlockDayAsync(int branchId, DateTime lockDate, int adminId)
     {
-        using var conn = _db.GetConnection();
+        using var conn = await _db.GetSqlConnectionAsync();
         using var cmd = _db.CreateCommand(conn, "spUnlockDay_update");
 
         _db.AddParameter(cmd, "@branchId", SqlDbType.Int, branchId);
         _db.AddParameter(cmd,"@lockDate", SqlDbType.Date, lockDate);
         _db.AddParameter(cmd, "@adminId", SqlDbType.Int, adminId);
-        _db.ExecuteNonQuery(cmd);
+        
+        await _db.ExecuteNonQueryAsync(cmd);
     }
 
     //Get Lock Status
-    public DayLock? GetDayLockStatus(int branchId, DateTime lockDate)
+    public async Task<DayLock?> GetDayLockStatusAsync(int branchId, DateTime lockDate)
     {
-        using var conn = _db.GetConnection();
+        using var conn = await _db.GetSqlConnectionAsync();
         using var cmd = _db.CreateCommand(conn, "spDayLock_select");
 
         _db.AddParameter(cmd, "@branchId", SqlDbType.Int, branchId);
         _db.AddParameter(cmd, "@lockDate", SqlDbType.Date, lockDate);
 
-        var table = _db.ExecuteDataTable(cmd);
+        var table = await _db.ExecuteDataTableAsync(cmd);
         if(table.Rows.Count == 0) return null;
 
         var row = table.Rows[0];
