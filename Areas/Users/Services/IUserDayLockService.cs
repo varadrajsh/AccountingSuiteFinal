@@ -1,10 +1,12 @@
-using System;
+using System.Threading.Tasks;
+using AccountingSuite.Models.Audit;
 
-namespace AccountingSuite.Areas.Users.Services;
-
-public interface IUserDayLockService
+namespace AccountingSuite.Areas.Users.Services
 {
-    Task<bool> RequestUnlockAsync(DayLockRequest request);
-    Task<bool> CancelRequestAsync(int requestId, int userId, string currentStatus);
-    Task<bool> LockDayAsync(int requestId, int userId);
+    public interface IUserDayLockService
+    {
+        Task<bool> RequestUnlockAsync(DayLockRequest request);
+        Task<bool> CancelRequestAsync(int requestId, int userId, string currentStatus);
+        Task<bool> LockDayAsync(int requestId, int userId);
+    }
 }
