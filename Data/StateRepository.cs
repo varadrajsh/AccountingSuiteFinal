@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using AccountingSuite.Models.Master;
 using Microsoft.Data.SqlClient;
@@ -8,71 +9,66 @@ namespace AccountingSuite.Data
 {
     public class StateRepository
     {
-        private readonly DbHelper _db;
-        public StateRepository(DbHelper db) => _db = db;
+        private readonly DbHelperAsync _db;
+        public StateRepository(DbHelperAsync db) => _db = db;
 
-        public IEnumerable<State> GetByRegion(int regionId)
+        public async Task<List<State>> GetAllAsync()
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
+            using var cmd = _db.CreateCommand(conn, "spState_GetAll"); 
+            var table = await _db.ExecuteDataTableAsync(cmd);
+            var states = new List<State>();
+            foreach (DataRow row in table.Rows)
+            {
+                states.Add(new State
+                {
+                    StateId = Convert.ToInt32(row["StateId"]),
+                    StateName = row["StateName"].ToString()!,
+                    RegionId = Convert.ToInt32(row["RegionId"])
+                });
+            }
+            return states;
+        }
+        public async Task<List<State>> GetByRegionAsync(int regionId)
+        {
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_GetByRegion");
-            cmd.Parameters.AddWithValue("@RegionId", regionId);
 
-            using var reader = cmd.ExecuteReader();
-            var list = new List<State>();
-            while (reader.Read())
+            _db.AddParameter(cmd, "@RegionId", SqlDbType.Int, regionId);
+
+            var table = await _db.ExecuteDataTableAsync(cmd);
+            var states = new List<State>();
+            foreach (DataRow row in table.Rows)
             {
-                list.Add(new State
+                states.Add(new State
                 {
-                    StateId = Convert.ToInt32(reader["StateId"]),
-                    StateName = reader["StateName"].ToString()!,
-                    RegionId = Convert.ToInt32(reader["RegionId"])
+                    StateId = Convert.ToInt32(row["StateId"]),
+                    StateName = row["StateName"].ToString()!,
+                    RegionId = Convert.ToInt32(row["RegionId"])
                 });
             }
-            return list;
+            return states;
         }
 
-        public IEnumerable<State> GetAll()
-        {
-            using var conn = _db.GetConnection();
-            using var cmd = _db.CreateCommand(conn, "spState_GetAll"); // ✅ new stored procedure
 
-            using var reader = cmd.ExecuteReader();
-            var list = new List<State>();
-            while (reader.Read())
-            {
-                list.Add(new State
-                {
-                    StateId = Convert.ToInt32(reader["StateId"]),
-                    StateName = reader["StateName"].ToString()!,
-                    RegionId = Convert.ToInt32(reader["RegionId"])
-                });
-            }
-            return list;
-        }
-        public int Insert(State state)
+        public async Task<int> InsertAsync(State state)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_Insert");
-            cmd.Parameters.AddWithValue("@StateName", state.StateName);
-            cmd.Parameters.AddWithValue("@RegionId", state.RegionId);
 
-            var result = cmd.ExecuteScalar();
+            _db.AddParameter(cmd, "@", SqlDbType.NVarChar, state.StateName);
+            _db.AddParameter(cmd, "@regionId", SqlDbType.Int, state.RegionId);
 
-            if (result == null || result == DBNull.Value)
-            {
-                throw new Exception("Insert failed: spState_Insert did not return a new StateId.");
-            }
-
-            return Convert.ToInt32(result); // ✅ new StateId returned from SQL
+            return await _db.ExecuteNonQueryAsync(cmd);
         }
-        public State? GetById(int id)
+        public async Task<State?> GetByIdAsync(int id)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_GetById");
-            cmd.Parameters.AddWithValue("@StateId", id);
+            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, id);
 
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
                 return new State
                 {
@@ -84,14 +80,10 @@ namespace AccountingSuite.Data
             return null;
         }
 
-        public bool Exists(string stateName, int regionId)
+        public async Task<bool> Exists(string stateName, int regionId)
         {
-            return GetByRegion(regionId)
-                   .Any(s => string.Equals(s.StateName, stateName, StringComparison.OrdinalIgnoreCase));
+            var states = await GetByRegionAsync(regionId); 
+            return states.Any(s => string.Equals(s.StateName, stateName, StringComparison.OrdinalIgnoreCase));
         }
-
-
-
-
     }
 }

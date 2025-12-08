@@ -1,10 +1,13 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using AccountingSuite.Models.Audit;
 using AccountingSuite.Models.Accounting;
 
 namespace AccountingSuite.Data.Repositories;
 
-public class DayLockRepository
+public class DayLockRepository 
 {  
     private readonly DbHelperAsync _db;
     public DayLockRepository(DbHelperAsync db)
@@ -64,3 +67,4 @@ public class DayLockRepository
         };
     }
 }
+    

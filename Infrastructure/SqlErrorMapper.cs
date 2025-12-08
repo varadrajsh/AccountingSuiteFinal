@@ -11,7 +11,8 @@ public static class SqlErrorMapper
     {
         foreach (SqlError err in ex.Errors)
         {
-            var mapped = MapParty(err)
+            var mapped = MapAudit(err) 
+                        ?? MapParty(err)
                         ?? MapAccountHead(err)
                       // ?? MapJournal(err)
                       // ?? MapLedger(err)
@@ -24,6 +25,45 @@ public static class SqlErrorMapper
                 modelState.AddModelError("", "An unexpected error occurred while saving data.");
         }
     }
+
+    // Audit Model
+        private static (string? Field, string Message)? MapAudit(SqlError err)
+        {
+            var msg = err.Message;
+
+            // Unique constraint on AuditId (should rarely happen)
+            if (msg.Contains("PK_TransactionAudit"))
+                return ("AuditId", "Audit record could not be saved due to a duplicate key issue.");
+
+            // Module must be valid
+            if (msg.Contains("CK_TransactionAudit_Module"))
+                return ("Module", "Invalid module specified for audit. Please check the transaction source.");
+
+            // TransactionId foreign key issues
+            if (msg.Contains("FK_TransactionAudit_Transaction"))
+                return ("TransactionId", "Invalid TransactionId. The referenced record does not exist.");
+
+            // Branch foreign key issues
+            if (msg.Contains("FK_TransactionAudit_Branch"))
+                return ("BranchId", "Invalid Branch selected. Please choose a valid branch.");
+
+            // Action must be valid
+            if (msg.Contains("CK_TransactionAudit_Action"))
+                return ("Action", "Invalid action specified. Please check the operation type.");
+
+            // Status must be valid
+            if (msg.Contains("CK_TransactionAudit_Status"))
+                return ("Status", "Invalid status specified. Please check the transaction result.");
+
+            // Approval/Disapproval foreign key issues
+            if (msg.Contains("FK_TransactionAudit_ApprovedBy"))
+                return ("ApprovedBy", "Invalid approver selected. Please choose a valid user.");
+
+            if (msg.Contains("FK_TransactionAudit_DisapprovedBy"))
+                return ("DisapprovedBy", "Invalid disapprover selected. Please choose a valid user.");
+
+            return null;
+        }
 
     //Party Model
     private static (string? Field, string Message)? MapParty(SqlError err)

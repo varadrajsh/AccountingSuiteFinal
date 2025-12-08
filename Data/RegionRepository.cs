@@ -1,23 +1,25 @@
-﻿using AccountingSuite.Models.Master;
+﻿using System.Data;
+using AccountingSuite.Models.Master;
 
 namespace AccountingSuite.Data
 {
     public class RegionRepository
     {
-        private readonly DbHelper _db;
-        public RegionRepository(DbHelper db)
+        private readonly DbHelperAsync _db;
+        public RegionRepository(DbHelperAsync db)
         {
             _db = db;
         }
 
-        public IEnumerable<Region> GetAll()
+        public async Task<List<Region>> GetAllAsync()
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spRegion_GetAll");
-            using var reader = cmd.ExecuteReader();
-
+            
+            using var reader = await cmd.ExecuteReaderAsync();
             var list = new List<Region>();
-            while (reader.Read())
+
+            while (await reader.ReadAsync())
             {
                 list.Add(new Region
                 {
@@ -27,14 +29,17 @@ namespace AccountingSuite.Data
             }
             return list;
         }
-        public IEnumerable<State> GetByRegion(int regionId)
+        public async Task<List<State>> GetByRegionAsync(int regionId)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_GetByRegion");
-            cmd.Parameters.AddWithValue("@RegionId", regionId);
-            using var reader = cmd.ExecuteReader();
+
+            _db.AddParameter(cmd, "@RegionId", SqlDbType.Int, regionId);
+        
+            using var reader = await cmd.ExecuteReaderAsync();
             var list = new List<State>();
-            while (reader.Read())
+
+            while (await reader.ReadAsync())
             {
                 list.Add(new State
                 {
@@ -45,18 +50,15 @@ namespace AccountingSuite.Data
             }
             return list;
         }
-        public bool Exists(string stateName, int regionId)
+        public async Task<bool> ExistsAsync(string stateName, int regionId)
         {
             var normalized = stateName?.Trim().TrimEnd('.').ToUpperInvariant();
+            var states = await GetByRegionAsync(regionId);
 
-            return GetByRegion(regionId)
-                   .Any(s => string.Equals(
-                       s.StateName?.Trim().TrimEnd('.').ToUpperInvariant(),
-                       normalized,
-                       StringComparison.OrdinalIgnoreCase));
+            return states.Any(s => string.Equals(
+                s.StateName?.Trim().TrimEnd('.').ToUpperInvariant(),
+                normalized,
+                StringComparison.OrdinalIgnoreCase));
         }
-
-
-
     }
 }

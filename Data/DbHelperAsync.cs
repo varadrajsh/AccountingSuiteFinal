@@ -8,9 +8,9 @@ namespace AccountingSuite.Data;
 public class DbHelperAsync
 {
     private readonly string _connectionString;
-    public DbHelperAsync(string connectionString)
+    public DbHelperAsync(IConfiguration config)
     {
-        _connectionString = connectionString;
+        _connectionString = config.GetConnectionString("DefaultConnection");
     }
     
      // Open SqlConnection
@@ -47,7 +47,7 @@ public class DbHelperAsync
     //Execute StoreProc that returns a single scalar table
     public async Task<object?> ExecuteScalarAsync(SqlCommand cmd)
     {
-        return cmd.ExecuteScalarAsync();
+        return await cmd.ExecuteScalarAsync();
     }
 
     //Execute StoreProc that returns a DataTable

@@ -7,20 +7,21 @@ namespace AccountingSuite.Data
 {
     public class PartyRepository
     {
-        private readonly DbHelper _db;
-        public PartyRepository(DbHelper db)
+        private readonly DbHelperAsync _db;
+        public PartyRepository(DbHelperAsync db)
         {
             _db = db;
         }
 
-        public IEnumerable<Party> GetAll()
+        public async Task<List<Party>> GetAllAsync()
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetAll");
-            using var reader = cmd.ExecuteReader();
+
+            using var reader =await cmd.ExecuteReaderAsync();
             var list = new List<Party>();
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
@@ -40,14 +41,15 @@ namespace AccountingSuite.Data
             return list;
         }
 
-        public IEnumerable<Party> GetAllWithState()
+        public async Task<List<Party>> GetAllWithStateAsync()
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetAllWithState");
-            using var reader = cmd.ExecuteReader();
+
+            using var reader = await cmd.ExecuteReaderAsync();
             var list = new List<Party>();
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
@@ -69,9 +71,9 @@ namespace AccountingSuite.Data
             return list;
         }
 
-        public (int newId, string newCode) Create(Party party)
+        public async Task<(int newId, string newCode)> CreateAsync(Party party)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Insert");
 
             // Align parameter sizes with model annotations
@@ -84,8 +86,8 @@ namespace AccountingSuite.Data
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, party.IsActive);
             _db.AddParameter(cmd, "@StateId", SqlDbType.Int, party.StateId);
 
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
                 return (
                     Convert.ToInt32(reader["NewPartyId"]),
@@ -95,9 +97,9 @@ namespace AccountingSuite.Data
             throw new Exception("Insert failed: no result returned.");
         }
 
-        public (int updatedId, string updatedCode) Update(Party party)
+        public async Task<(int updatedId, string updatedCode)> UpdateAsync(Party party)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Update");
 
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, party.PartyId);
@@ -113,8 +115,8 @@ namespace AccountingSuite.Data
 
             try
             {
-                using var reader = cmd.ExecuteReader();
-                if (!reader.Read())
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (! await reader.ReadAsync())
                     throw new Exception("Update failed: no result returned.");
 
                 return (
@@ -129,14 +131,15 @@ namespace AccountingSuite.Data
             }
         }
 
-        public Party? GetById(int id)
+        public async Task<Party?> GetByIdAsync(int id)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetById");
+
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, id);
 
-            using var reader = cmd.ExecuteReader();
-            if (!reader.Read()) return null;
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (!await reader.ReadAsync()) return null;
 
             Enum.TryParse<PartyTypeEnum>(reader["PartyType"]?.ToString() ?? "", true, out var partyType);
 
@@ -156,13 +159,14 @@ namespace AccountingSuite.Data
             };
         }
 
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
-            using var conn = _db.GetConnection();
+            using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Delete");
+
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, id);
 
-            int rows = _db.ExecuteNonQuery(cmd);
+            int rows = await _db.ExecuteNonQueryAsync(cmd);
             if (rows == 0)
             {
                 throw new Exception("Delete failed: Party not found or already deleted.");

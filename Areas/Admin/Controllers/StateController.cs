@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AccountingSuite.Data;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
@@ -18,38 +19,35 @@ namespace AccountingSuite.Areas.Admin.Controllers
             _stateRepo = stateRepo;
             _regionRepo = regionRepo;
         }
-        public IActionResult Index(int? regionId)
+        public async Task<IActionResult> Index(int? regionId)
         {
-            ViewBag.Regions = _regionRepo.GetAll();
+            ViewBag.Regions = await _regionRepo.GetAllAsync();
 
             IEnumerable<State> states;
             if (regionId.HasValue && regionId.Value > 0)
             {
-                states = _stateRepo.GetByRegion(regionId.Value);
+                states = await _stateRepo.GetByRegionAsync(regionId.Value);
                 ViewBag.RegionId = regionId.Value;
             }
             else
             {
-                // ✅ Show all states across all regions
-                states = _stateRepo.GetAll();
+                states = await _stateRepo.GetAllAsync();
                 ViewBag.RegionId = null;
             }
             return View(states);
         }
 
-        // ✅ Show Create modal
         [HttpGet]
-        public IActionResult Create(int regionId)
+        public async Task<IActionResult> CreateAsync(int regionId)
         {
-            ViewBag.Regions = _regionRepo.GetAll();
+            ViewBag.Regions = await _regionRepo.GetAllAsync();
             ViewBag.RegionId = regionId;
             return PartialView("_CreatePartial", new State { RegionId = regionId });
         }
 
-        // ✅ Handle Create submission
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(State state, int regionId)
+        public async Task<IActionResult> CreateAsync(State state, int regionId)
         {
             state.StateName = state.StateName?.Trim().TrimEnd('.').ToUpperInvariant();
             if (!ModelState.IsValid)
@@ -60,12 +58,11 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
             try
             {
-                _stateRepo.Insert(state);
+                await _stateRepo.InsertAsync(state);
                 TempData["Message"] = "State added successfully!";
             }
             catch (Exception ex)
             {
-                // ✅ Any error (duplicate, SQL, etc.) → show in Index
                 TempData["Error"] = $"State '{state.StateName}' already exists";
             }
 

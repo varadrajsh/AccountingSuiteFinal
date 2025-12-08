@@ -1,10 +1,12 @@
-﻿using AccountingSuite.Data;
+﻿using AccountingSuite.Data.Repositories;
 using AccountingSuite.Infrastructure;
 using AccountingSuite.Models.Common;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
+using AccountingSuite.Data;
+using AccountingSuite.Data.Repositories;
 
 namespace AccountingSuite.Areas.Admin.Controllers
 {
@@ -20,9 +22,9 @@ namespace AccountingSuite.Areas.Admin.Controllers
             _stateRepository = stateRepository;
         }
 
-        private void PopulateStatesDropdown()
+        private async Task PopulateStatesDropdown()
         {
-            var states = _stateRepository.GetAll() ?? new List<State>();
+            var states = await _stateRepository.GetAll();
             ViewBag.States = new SelectList(states, "StateId", "StateName");
         }
 
@@ -35,17 +37,16 @@ namespace AccountingSuite.Areas.Admin.Controllers
             ViewBag.PartyTypes = types;
         }
 
-        public IActionResult Index(string? searchTerm, int? stateId, int pageNumber = 1, int pageSize = 15)
+        // ✅ Index with async repository calls
+        public async Task<IActionResult> Index(string? searchTerm, int? stateId, int pageNumber = 1, int pageSize = 15)
         {
-            var parties = _repository.GetAllWithState();
-
+            var parties = await _repository.GetAllWithStateAsync();
 
             if (stateId.HasValue && stateId.Value > 0)
             {
                 parties = parties.Where(p => p.StateId == stateId.Value);
                 ViewData["SelectedState"] = stateId.Value;
             }
-
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -56,56 +57,56 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 ViewData["CurrentFilter"] = searchTerm;
             }
 
-            PopulateStatesDropdown();
+            await PopulateStatesDropdown();
             var paginatedList = PaginatedList<Party>.Create(parties, pageNumber, pageSize);
             return View(paginatedList);
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateStatesDropdown();
+            await PopulateStatesDropdown();
             PopulatePartyTypes();
             return View(new Party { IsActive = true });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Party party)
+        public async Task<IActionResult> Create(Party party)
         {
             if (!ModelState.IsValid)
             {
-                PopulateStatesDropdown();
+                await PopulateStatesDropdown();
                 PopulatePartyTypes();
                 return View(party);
             }
 
             try
             {
-                var (newId, newCode) = _repository.Create(party);
+                var (newId, newCode) = await _repository.Create(party);
                 TempData["Message"] = $"Party created successfully with Code: {newCode}";
                 return RedirectToAction("Index");
             }
             catch (SqlException ex)
             {
                 SqlErrorMapper.Map(ex, ModelState);
-                PopulateStatesDropdown();
+                await PopulateStatesDropdown();
                 PopulatePartyTypes();
                 return View(party);
             }
         }
 
         // GET: Party/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var party = _repository.GetById(id);
+            var party = await _repository.GetById(id);
             if (party == null)
             {
                 TempData["Error"] = "Party not found.";
                 return RedirectToAction("Index");
             }
 
-            PopulateStatesDropdown();
+            await PopulateStatesDropdown();
             PopulatePartyTypes();
             return View(party);
         }
@@ -113,59 +114,56 @@ namespace AccountingSuite.Areas.Admin.Controllers
         // POST: Party/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Party party)
+        public async Task<IActionResult> Edit(Party party)
         {
             if (!ModelState.IsValid)
             {
-                PopulateStatesDropdown();
+                await PopulateStatesDropdown();
                 PopulatePartyTypes();
                 return View(party);
             }
 
             try
             {
-                _repository.Update(party); // Update includes IsActive toggle
+                await _repository.Update(party); // Update includes IsActive toggle
                 TempData["Message"] = "Party updated successfully.";
                 return RedirectToAction("Index");
             }
             catch (SqlException ex)
             {
-                // Map SQL constraint errors to field-level messages
                 SqlErrorMapper.Map(ex, ModelState);
-
-                PopulateStatesDropdown();
+                await PopulateStatesDropdown();
                 PopulatePartyTypes();
                 return View(party);
             }
         }
 
-
         // GET: Party/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var party = _repository.GetById(id);
+            var party = await _repository.GetById(id);
             if (party == null) return NotFound();
 
-            return PartialView("_DetailsPartial", party); // 👈 return partial
+            return PartialView("_DetailsPartial", party);
         }
 
         // GET: Party/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var party = _repository.GetById(id);
+            var party = await _repository.GetById(id);
             if (party == null) return NotFound();
 
-            return PartialView("_DeletePartial", party); // 👈 return partial
+            return PartialView("_DeletePartial", party);
         }
 
         // POST: Party/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int PartyId)
+        public async Task<IActionResult> DeleteConfirmed(int PartyId)
         {
             try
             {
-                _repository.Delete(PartyId);
+                await _repository.Delete(PartyId);
                 TempData["Message"] = "Party deleted successfully.";
                 return RedirectToAction("Index");
             }
@@ -175,7 +173,6 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 TempData["Error"] = "Unable to delete Party due to database constraint.";
                 return RedirectToAction("Index");
             }
-
         }
     }
 }

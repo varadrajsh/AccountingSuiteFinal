@@ -1,0 +1,144 @@
+﻿@model AccountingSuite.Models.Common.PaginatedList<AccountingSuite.Models.Audit.TransactionAudit>
+
+@{
+    ViewData["Title"] = "Audit Report (SuperAdmin)";
+}
+
+<!-- Alerts -->
+<div class="alert alert-success alert-dismissible fade show mt-3 d-none" role="alert">
+    Success message goes here
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<div class="alert alert-danger alert-dismissible fade show mt-3 d-none" role="alert">
+    Error message goes here
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-end mb-2">
+    <h2 class="mb-0">Audit Report (SuperAdmin)</h2>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Audit Report</li>
+    </ol>
+</nav>
+
+<!-- Search Bars -->
+<div class="d-flex flex-wrap gap-3 mb-3 w-100">
+
+    <!-- Branch-wise search -->
+    <form class="d-flex gap-2 w-50" method="get" asp-action="Index">
+        <input type="text" id="branchSearch" name="branchSearch"
+               class="form-control form-control-sm border-dark"
+               placeholder="Search by BranchId, BranchName, AdminId, UserId" />
+
+        <input type="date" id="fromDate" name="fromDate"
+               class="form-control form-control-sm border-dark" />
+        <input type="date" id="toDate" name="toDate"
+               class="form-control form-control-sm border-dark" />
+
+        <button type="submit" class="btn btn-sm btn-primary">Search</button>
+        <button type="reset" class="btn btn-sm btn-outline-secondary">Reset</button>
+    </form>
+
+    <!-- TransactionId search -->
+    <form class="d-flex gap-2 w-50" method="get" asp-action="Index">
+        <input type="text" id="transactionSearch" name="transactionId"
+               class="form-control form-control-sm border-dark"
+               placeholder="Enter TransactionId to fetch single record" />
+        <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="table-responsive">
+    <table class="table table-pill table-sm table-hover mt-2 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>AuditId</th>
+                <th>AuditReportCode</th>
+                <th>ModelName</th>
+                <th>Module</th>
+                <th>TransactionId</th>
+                <th>BranchId</th>
+                <th>ActionDate</th>
+                <th>Action</th>
+                <th>PerformedBy</th>
+                <th>PerformedOn</th>
+                <th>Status</th>
+                <th>Reason</th>
+                <th>ApprovedBy</th>
+                <th>ApprovedOn</th>
+                <th>ApprovalReason</th>
+                <th>DisapprovedBy</th>
+                <th>DisapprovedOn</th>
+                <th>DisapprovalReason</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var audit in Model)
+            {
+                <tr>
+                    <td class="fw-bold">@audit.AuditId</td>
+                    <td>@audit.AuditReportCode</td>
+                    <td>@audit.ModelName</td>
+                    <td>@audit.Module</td>
+                    <td>@audit.TransactionId</td>
+                    <td>@audit.BranchId</td>
+                    <td>@audit.ActionDate.ToString("yyyy-MM-dd")</td>
+                    <td>@audit.Action</td>
+                    <td>@audit.PerformedBy</td>
+                    <td>@audit.PerformedOn.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@audit.Status</td>
+                    <td>@audit.Reason</td>
+                    <td>@audit.ApprovedBy</td>
+                    <td>@audit.ApprovedOn?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@audit.ApprovalReason</td>
+                    <td>@audit.DisapprovedBy</td>
+                    <td>@audit.DisapprovedOn?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@audit.DisapprovalReason</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+    @if (Model.HasPreviousPage)
+    {
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)"
+           asp-route-branchSearch="@ViewData["CurrentFilter"]"
+           class="text-primary">&lt;Prev</a>
+    }
+    else
+    {
+        <span class="text-muted">&lt;Prev</span>
+    }
+
+    <span class="fw-regular">
+        @if (Model.TotalCount == 0)
+        {
+            <span class="fw-semibold">No records found</span>
+        }
+        else
+        {
+            <span>Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records</span>
+        }
+    </span>
+
+    @if (Model.HasNextPage)
+    {
+        <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)"
+           asp-route-branchSearch="@ViewData["CurrentFilter"]"
+           class="text-primary">Next&gt;</a>
+    }
+    else
+    {
+        <span class="text-muted">Next&gt;</span>
+    }
+</div>
