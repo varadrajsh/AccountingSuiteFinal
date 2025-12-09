@@ -51,9 +51,14 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label asp-for="PartyType" class="form-label">Party Type</label>
-                <select asp-for="PartyType" asp-items="Html.GetEnumSelectList<Party.PartyTypeEnum>()" class="form-select">
+                @* <select asp-for="PartyType" asp-items="Html.GetEnumSelectList<Party.PartyTypeEnum>()" class="form-select">
                     <option value="">-- Select Type --</option>
+                </select> *@
+                <select asp-for="StateId" asp-items="ViewBag.States"
+                    class="form-select form-select-sm border-dark w-100">
+                    <option value="">-- Select State --</option>
                 </select>
+
                 <span asp-validation-for="PartyType" class="text-danger"></span>
             </div>
             <div class="col-md-6">
@@ -104,5 +109,7 @@
 </form>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

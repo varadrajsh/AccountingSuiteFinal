@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 //Register DbHelper with connection string
-builder.Services.AddScoped<DbHelper>(item => new DbHelper(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<DbHelperAsync>();
 builder.Services.AddScoped<PartyRepository>();
 builder.Services.AddScoped<RegionRepository>();

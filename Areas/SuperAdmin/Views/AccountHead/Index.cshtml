@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Account Head List";
 }
+
 <!-- Alerts -->
 @if (TempData["Message"] != null)
 {
@@ -12,14 +13,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-@if (!ViewData.ModelState.IsValid)
+@if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <p>@error.ErrorMessage</p>
-        }
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
@@ -57,7 +55,7 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -81,11 +79,16 @@
                             }
                         </td>
                         <td>
-                            <a asp-area="SuperAdmin" asp-controller="AccountHead" asp-action="Edit"
-                                asp-route-id="@item.AccountHeadId" class="btn btn-sm btn-primary">
-                                Edit
-                            </a>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle-switch" type="checkbox" @(item.IsActive ? "checked" : "")
+                                    data-id="@item.AccountHeadId" data-name="@item.AccountHeadName"
+                                    data-code="@item.AccountHeadCode" data-page="@Model.PageIndex"
+                                    data-status="@(item.IsActive ? "false" : "true")"
+                                    data-action="@(item.IsActive ? "Deactivate" : "Activate")" data-bs-toggle="modal"
+                                    data-bs-target="#confirmModal" />
+                            </div>
                         </td>
+
                     </tr>
                 }
             }
@@ -131,15 +134,30 @@
     }
 </div>
 
-<!-- Edit Modal -->
-<div class="modal fade" id="editAccountHeadModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" id="editModalContent">
-            <!-- AJAX will inject _Edit.cshtml here -->
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpdateStatus" method="post">
+                <input type="hidden" name="pageNumber" id="modalPageNumber" />
+                <input type="hidden" name="accountHeadId" id="modalAccountHeadId" />
+                <input type="hidden" name="isActive" id="modalIsActive" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage">Are you sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Yes, proceed</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <script>
@@ -151,6 +169,32 @@
                 $("#accountLookupName").val(ui.item.accountHeadKeyword);
                 $("#accountTypeHidden").val(ui.item.accountTypeKeyword);
                 $("#lookupIdHidden").val(ui.item.lookupId);
+            }
+        });
+
+        // Show modal when toggle is clicked
+        $('#confirmModal').on('show.bs.modal', function (event) {
+            var toggle = $(event.relatedTarget);
+            var accountHeadId = toggle.data('id');
+            var status = toggle.data('status');
+            var action = toggle.data('action');
+            var name = toggle.data('name');
+            var code = toggle.data('code');
+            var page = toggle.data('page');
+
+            $('#modalAccountHeadId').val(accountHeadId);
+            $('#modalIsActive').val(status);
+            $('#modalPageNumber').val(page);
+
+            $('#confirmMessage').text(
+                "Are you sure you want to " + action + " Account Head '" + name + "' (Code: " + code + ")?"
+            );
+
+            var proceedBtn = $(this).find('.modal-footer button[type=submit]');
+            if (action === "Deactivate") {
+                proceedBtn.removeClass("btn-success").addClass("btn-danger").text("Yes, Deactivate");
+            } else {
+                proceedBtn.removeClass("btn-danger").addClass("btn-success").text("Yes, Activate");
             }
         });
     </script>

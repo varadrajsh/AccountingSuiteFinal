@@ -10,7 +10,7 @@
 @if (TempData["Message"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-        @TempData["Message"]    
+        @TempData["Message"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
@@ -27,7 +27,7 @@
     <!-- Left block -->
     <div class="d-flex align-items-center gap-2">
         <h2 class="mb-0">Branch List</h2>
-       
+
     </div>
 
     <!-- Right block: Search Branch form -->
@@ -54,19 +54,12 @@
 <div class="d-flex flex-wrap gap-2 mb-3 w-100">
     <!-- State filter + View Branch -->
     <form asp-action="Index" method="get" class="d-flex gap-2 w-50">
-        <select name="stateId" class="form-select form-select-sm border-dark w-100">
+        <select name="stateId" asp-items="ViewBag.States" asp-for="@ViewData["SelectedState"]"
+            class="form-select form-select-sm border-dark w-100 ">
             <option value="">-- Select State --</option>
-            @if (states != null)
-            {
-                foreach (var s in states)
-                {
-                    <option value="@s.StateId">@s.StateName</option>
-                }
-            }
         </select>
-        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Branches</button>
+        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Branch</button>
     </form>
-
     <!-- View All Branches -->
     <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Branches</a>
 
@@ -137,7 +130,8 @@
     @if (Model.HasPreviousPage)
     {
         <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)"
-            asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">&lt;Prev</a>
+            asp-route-searchTerm="@ViewData["CurrentFilter"]" asp-route-stateId="@ViewData["SelectedState"]"
+            class="text-primary">&lt;Prev</a>
     }
     else
     {
@@ -158,13 +152,16 @@
     @if (Model.HasNextPage)
     {
         <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)"
-            asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">Next&gt;</a>
+            asp-route-searchTerm="@ViewData["CurrentFilter"]" asp-route-stateId="@ViewData["SelectedState"]"
+            class="text-primary">Next&gt;</a>
     }
     else
     {
         <span class="text-muted">Next&gt;</span>
     }
 </div>
+
+<!-- Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -172,8 +169,6 @@
         </div>
     </div>
 </div>
-
-
 
 @section Scripts {
     <script>

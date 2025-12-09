@@ -12,9 +12,9 @@ public class DbHelperAsync
     {
         _connectionString = config.GetConnectionString("DefaultConnection");
     }
-    
-     // Open SqlConnection
-     public async Task<SqlConnection> GetSqlConnectionAsync()
+
+    // Open SqlConnection
+    public async Task<SqlConnection> GetSqlConnectionAsync()
     {
         var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -34,7 +34,7 @@ public class DbHelperAsync
     public void AddParameter(SqlCommand cmd, string name, SqlDbType type, object? value, int size = 0)
     {
         var param = cmd.Parameters.Add(name, type);
-        if(size > 0)param.Size = size;
+        if (size > 0) param.Size = size;
         param.Value = value ?? DBNull.Value;
     }
 

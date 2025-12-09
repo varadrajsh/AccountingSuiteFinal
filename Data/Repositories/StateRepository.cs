@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 using AccountingSuite.Models.Master;
 using Microsoft.Data.SqlClient;
 
-namespace AccountingSuite.Data
+namespace AccountingSuite.Data.Repositories
 {
     public class StateRepository
     {
         private readonly DbHelperAsync _db;
         public StateRepository(DbHelperAsync db) => _db = db;
 
+        // Get all states
         public async Task<List<State>> GetAllAsync()
         {
             using var conn = await _db.GetSqlConnectionAsync();
-            using var cmd = _db.CreateCommand(conn, "spState_GetAll"); 
+            using var cmd = _db.CreateCommand(conn, "spState_GetAll");
             var table = await _db.ExecuteDataTableAsync(cmd);
+
             var states = new List<State>();
             foreach (DataRow row in table.Rows)
             {
@@ -29,14 +32,16 @@ namespace AccountingSuite.Data
             }
             return states;
         }
+
+        // Get states by region
         public async Task<List<State>> GetByRegionAsync(int regionId)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_GetByRegion");
-
             _db.AddParameter(cmd, "@RegionId", SqlDbType.Int, regionId);
 
             var table = await _db.ExecuteDataTableAsync(cmd);
+
             var states = new List<State>();
             foreach (DataRow row in table.Rows)
             {
@@ -50,17 +55,29 @@ namespace AccountingSuite.Data
             return states;
         }
 
-
-        public async Task<int> InsertAsync(State state)
+        // Insert new state (Party-style pattern: Status + NewId)
+        public async Task<(string Status, int? NewId)> InsertAsync(State state)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_Insert");
+            cmd.CommandType = CommandType.StoredProcedure;
 
-            _db.AddParameter(cmd, "@", SqlDbType.NVarChar, state.StateName);
-            _db.AddParameter(cmd, "@regionId", SqlDbType.Int, state.RegionId);
+            _db.AddParameter(cmd, "@StateName", SqlDbType.NVarChar, state.StateName, 100);
+            _db.AddParameter(cmd, "@RegionId", SqlDbType.Int, state.RegionId);
+            _db.AddParameter(cmd, "@CreatedBy", SqlDbType.Int, 101); // or current user id
 
-            return await _db.ExecuteNonQueryAsync(cmd);
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                string status = reader["Status"].ToString()!;
+                int? newId = reader["NewStateId"] == DBNull.Value ? null : (int?)reader["NewStateId"];
+                return (status, newId);
+            }
+
+            return ("ERROR", null);
         }
+
+        // Get state by ID
         public async Task<State?> GetByIdAsync(int id)
         {
             using var conn = await _db.GetSqlConnectionAsync();
@@ -80,9 +97,10 @@ namespace AccountingSuite.Data
             return null;
         }
 
+        // Check if state exists in region
         public async Task<bool> Exists(string stateName, int regionId)
         {
-            var states = await GetByRegionAsync(regionId); 
+            var states = await GetByRegionAsync(regionId);
             return states.Any(s => string.Equals(s.StateName, stateName, StringComparison.OrdinalIgnoreCase));
         }
     }

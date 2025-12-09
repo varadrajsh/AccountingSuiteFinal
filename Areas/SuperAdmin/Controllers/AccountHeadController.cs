@@ -1,11 +1,8 @@
 using AccountingSuite.Data;
-using AccountingSuite.Infrastructure;
 using AccountingSuite.Models.Master;
+using AccountingSuite.Models.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using AccountingSuite.Models.Common;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-
 
 namespace AccountingSuite.Areas.SuperAdmin.Controllers
 {
@@ -13,42 +10,30 @@ namespace AccountingSuite.Areas.SuperAdmin.Controllers
     public class AccountHeadController : Controller
     {
         private readonly AccountHeadRepository _repo;
+
         public AccountHeadController(AccountHeadRepository repo)
         {
             _repo = repo;
         }
 
-        // GET: AccountHead
-        public async Task<IActionResult> Index(int pageNumber = 1)
+        // Index with pagination
+        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 25)
         {
             var accountHeads = await _repo.GetAllAsync();
-            var paginated = PaginatedList<AccountHead>.Create(accountHeads, pageNumber, 10);
+            var paginated = PaginatedList<AccountHead>.Create(accountHeads, pageNumber, pageSize);
             return View(paginated);
         }
 
-        // Get Details
-        public async Task<IActionResult> Details(int id)
-        {
-            var accountHead = await _repo.GetByIdAsync(id);
-            if (accountHead == null) return NotFound();
-            return View(accountHead);
-        }
-
-        //Create
-        [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
+        // Create AccountHead via AccountLookup
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AccountHead accountHead)
+        public async Task<IActionResult> Create(AccountHead accountHead, int pageNumber = 1)
         {
             if (!ModelState.IsValid)
             {
+                TempData["Error"] = "Invalid data. Please check the form and try again.";
                 var accountHeads = await _repo.GetAllAsync();
-                var paginated = PaginatedList<AccountHead>.Create(accountHeads, 1, 10);
+                var paginated = PaginatedList<AccountHead>.Create(accountHeads, pageNumber, 25);
                 return View("Index", paginated);
             }
 
@@ -57,14 +42,22 @@ namespace AccountingSuite.Areas.SuperAdmin.Controllers
             if (result.newId > 0)
             {
                 TempData["Message"] = $"Account Head '{accountHead.AccountHeadName}' created successfully.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { pageNumber });
+            }
+
+            // If errors mapped by SqlErrorMapper
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = string.Join(" | ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
             }
 
             var accountHeadsReload = await _repo.GetAllAsync();
-            var paginatedReload = PaginatedList<AccountHead>.Create(accountHeadsReload, 1, 10);
+            var paginatedReload = PaginatedList<AccountHead>.Create(accountHeadsReload, pageNumber, 25);
             return View("Index", paginatedReload);
         }
 
+        // Autocomplete for AccountLookup
         [HttpGet]
         public async Task<JsonResult> SearchAccountLookup(string term)
         {
@@ -87,38 +80,33 @@ namespace AccountingSuite.Areas.SuperAdmin.Controllers
             return Json(suggestions);
         }
 
-        // GET: AccountHead/Edit/5
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var accountHead = await _repo.GetByIdAsync(id);
-            if (accountHead == null) return NotFound();
-
-            return View(accountHead);
-        }
-
-        // POST: AccountHead/Edit/5
+        // Toggle Active/Inactive only
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(AccountHead accountHead)
+        public async Task<IActionResult> UpdateStatus(int accountHeadId, bool isActive, int pageNumber = 1)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(accountHead);
-            }
-
             try
             {
-                _repo.UpdateStatus(accountHead.AccountHeadId, accountHead.IsActive);
+                var accountHead = await _repo.GetByIdAsync(accountHeadId);
+                await _repo.UpdateStatusAsync(accountHeadId, isActive, ModelState);
 
-                TempData["Message"] = "Account Head status updated successfully.";
-                return RedirectToAction("Index");
+                if (ModelState.IsValid)
+                {
+                    TempData["Message"] =
+                        $"Account Head '{accountHead?.AccountHeadName}' (Code: {accountHead?.AccountHeadCode}) has been {(isActive ? "activated" : "deactivated")}.";
+                }
+                else
+                {
+                    TempData["Error"] = string.Join(" | ",
+                        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                }
             }
             catch (SqlException ex)
             {
-                SqlErrorMapper.Map(ex, ModelState);
-                return View(accountHead);
+                TempData["Error"] = ex.Message;
             }
+
+            return RedirectToAction(nameof(Index), new { pageNumber });
         }
     }
 }

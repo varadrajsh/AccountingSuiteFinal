@@ -5,10 +5,12 @@
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="AccountHeadId" />
-
-    <p><strong>Name:</strong> @Model.AccountHeadName</p>
-    <p><strong>Type:</strong> @Model.AccountHeadType</p>
-
+    <div class="form-check mb-3">
+        <input asp-for="AccountHeadName" class="form-control" />
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="AccountHeadType" class="form-control" />
+    </div>
     <div class="form-check mb-3">
         <input asp-for="IsActive" class="form-check-input" type="checkbox" />
         <label asp-for="IsActive" class="form-check-label">Active</label>

@@ -1,24 +1,29 @@
-﻿using AccountingSuite.Models.Master;
-using Microsoft.Data.SqlClient;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
+using AccountingSuite.Models.Master;
+using Microsoft.Data.SqlClient;
 using static AccountingSuite.Models.Master.Party;
 
-namespace AccountingSuite.Data
+namespace AccountingSuite.Data.Repositories
 {
     public class PartyRepository
     {
         private readonly DbHelperAsync _db;
+
         public PartyRepository(DbHelperAsync db)
         {
             _db = db;
         }
 
-        public async Task<List<Party>> GetAllAsync()
+        //  Get all parties
+        public async Task<List<Party>> GetAll()
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetAll");
 
-            using var reader =await cmd.ExecuteReaderAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
             var list = new List<Party>();
 
             while (await reader.ReadAsync())
@@ -41,7 +46,8 @@ namespace AccountingSuite.Data
             return list;
         }
 
-        public async Task<List<Party>> GetAllWithStateAsync()
+        //  Get all parties with state info
+        public async Task<List<Party>> GetAllWithState()
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetAllWithState");
@@ -71,12 +77,12 @@ namespace AccountingSuite.Data
             return list;
         }
 
-        public async Task<(int newId, string newCode)> CreateAsync(Party party)
+        //  Create new party
+        public async Task<(int newId, string newCode)> Create(Party party)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Insert");
 
-            // Align parameter sizes with model annotations
             _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 100);
             _db.AddParameter(cmd, "@PartyType", SqlDbType.NVarChar, party.PartyType.ToString(), 20);
             _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 15);
@@ -97,13 +103,14 @@ namespace AccountingSuite.Data
             throw new Exception("Insert failed: no result returned.");
         }
 
-        public async Task<(int updatedId, string updatedCode)> UpdateAsync(Party party)
+        //  Update party
+        public async Task<(int updatedId, string updatedCode)> Update(Party party)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Update");
 
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, party.PartyId);
-            _db.AddParameter(cmd, "@PartyCode", SqlDbType.NVarChar, party.PartyCode, 20);
+            // _db.AddParameter(cmd, "@PartyCode", SqlDbType.NVarChar, party.PartyCode, 20);
             _db.AddParameter(cmd, "@Name", SqlDbType.NVarChar, party.Name, 100);
             _db.AddParameter(cmd, "@PartyType", SqlDbType.NVarChar, party.PartyType.ToString(), 20);
             _db.AddParameter(cmd, "@GSTIN", SqlDbType.NVarChar, party.GSTIN, 15);
@@ -113,29 +120,21 @@ namespace AccountingSuite.Data
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, party.IsActive);
             _db.AddParameter(cmd, "@StateId", SqlDbType.Int, party.StateId);
 
-            try
-            {
-                using var reader = await cmd.ExecuteReaderAsync();
-                if (! await reader.ReadAsync())
-                    throw new Exception("Update failed: no result returned.");
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+                throw new Exception("Update failed: no result returned.");
 
-                return (
-                    Convert.ToInt32(reader["UpdatedPartyId"]),
-                    reader["UpdatedPartyCode"].ToString()!
-                );
-            }
-            catch (SqlException ex)
-            {
-                // Wrap with friendly message mapping point (you can plug in your mapper here)
-                throw new Exception("Unable to update Party. Please check inputs or duplicates.", ex);
-            }
+            return (
+                Convert.ToInt32(reader["UpdatedPartyId"]),
+                reader["UpdatedPartyCode"].ToString()!
+            );
         }
 
-        public async Task<Party?> GetByIdAsync(int id)
+        //  Get party by ID
+        public async Task<Party?> GetById(int id)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_GetById");
-
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, id);
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -159,11 +158,11 @@ namespace AccountingSuite.Data
             };
         }
 
+        //  Delete party
         public async Task Delete(int id)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spParty_Delete");
-
             _db.AddParameter(cmd, "@PartyId", SqlDbType.Int, id);
 
             int rows = await _db.ExecuteNonQueryAsync(cmd);

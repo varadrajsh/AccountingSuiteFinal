@@ -5,8 +5,6 @@ using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
-using AccountingSuite.Data;
-using AccountingSuite.Data.Repositories;
 
 namespace AccountingSuite.Areas.Admin.Controllers
 {
@@ -24,7 +22,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
         private async Task PopulateStatesDropdown()
         {
-            var states = await _stateRepository.GetAll();
+            var states = await _stateRepository.GetAllAsync();
             ViewBag.States = new SelectList(states, "StateId", "StateName");
         }
 
@@ -37,14 +35,14 @@ namespace AccountingSuite.Areas.Admin.Controllers
             ViewBag.PartyTypes = types;
         }
 
-        // ✅ Index with async repository calls
+        // Index with search + pagination
         public async Task<IActionResult> Index(string? searchTerm, int? stateId, int pageNumber = 1, int pageSize = 15)
         {
-            var parties = await _repository.GetAllWithStateAsync();
+            var parties = await _repository.GetAllWithState();
 
             if (stateId.HasValue && stateId.Value > 0)
             {
-                parties = parties.Where(p => p.StateId == stateId.Value);
+                parties = parties.Where(p => p.StateId == stateId.Value).ToList();
                 ViewData["SelectedState"] = stateId.Value;
             }
 
@@ -53,7 +51,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 parties = parties.Where(p =>
                     (!string.IsNullOrEmpty(p.PartyCode) && p.PartyCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
                     (!string.IsNullOrEmpty(p.Name) && p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                );
+                ).ToList();
                 ViewData["CurrentFilter"] = searchTerm;
             }
 
@@ -62,6 +60,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return View(paginatedList);
         }
 
+        // Show Create form
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -70,6 +69,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return View(new Party { IsActive = true });
         }
 
+        // Handle Create submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Party party)
@@ -96,7 +96,8 @@ namespace AccountingSuite.Areas.Admin.Controllers
             }
         }
 
-        // GET: Party/Edit/5
+        // Show Edit form
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var party = await _repository.GetById(id);
@@ -111,7 +112,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return View(party);
         }
 
-        // POST: Party/Edit/5
+        // Handle Edit submission
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Party party)
@@ -125,7 +126,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
             try
             {
-                await _repository.Update(party); // Update includes IsActive toggle
+                await _repository.Update(party);
                 TempData["Message"] = "Party updated successfully.";
                 return RedirectToAction("Index");
             }
@@ -138,7 +139,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             }
         }
 
-        // GET: Party/Details/5
+        //   Details partial
         public async Task<IActionResult> Details(int id)
         {
             var party = await _repository.GetById(id);
@@ -147,7 +148,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return PartialView("_DetailsPartial", party);
         }
 
-        // GET: Party/Delete/5
+        //   Delete partial
         public async Task<IActionResult> Delete(int id)
         {
             var party = await _repository.GetById(id);
@@ -156,7 +157,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return PartialView("_DeletePartial", party);
         }
 
-        // POST: Party/Delete/5
+        //   Handle Delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int PartyId)
@@ -165,14 +166,13 @@ namespace AccountingSuite.Areas.Admin.Controllers
             {
                 await _repository.Delete(PartyId);
                 TempData["Message"] = "Party deleted successfully.";
-                return RedirectToAction("Index");
             }
             catch (SqlException ex)
             {
                 SqlErrorMapper.Map(ex, ModelState);
                 TempData["Error"] = "Unable to delete Party due to database constraint.";
-                return RedirectToAction("Index");
             }
+            return RedirectToAction("Index");
         }
     }
 }

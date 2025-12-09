@@ -3,15 +3,17 @@
     var regions = ViewBag.Regions as IEnumerable<AccountingSuite.Models.Master.Region>;
 }
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" asp-controller="State" asp-area="Admin" method="post">
+    @Html.AntiForgeryToken()
+
     <div class="modal-header">
         <h5 class="modal-title">Add State</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
 
     <div class="modal-body">
         <div class="mb-3">
-            <label asp-for="RegionId" class="form-label">Region</label>
+            <label asp-for="RegionId" class="form-label"></label>
             <select asp-for="RegionId" class="form-select">
                 <option value="">-- Select Region --</option>
                 @if (regions != null)
@@ -24,8 +26,9 @@
             </select>
             <span asp-validation-for="RegionId" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
-            @* <label asp-for="StateName" class="form-label">State Name</label> *@
+            <label asp-for="StateName" class="form-label"></label>
             <input asp-for="StateName" class="form-control" />
             <span asp-validation-for="StateName" class="text-danger"></span>
         </div>
