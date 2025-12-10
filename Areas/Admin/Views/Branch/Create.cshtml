@@ -96,6 +96,15 @@
                 <span asp-validation-for="IsParcelBooking" class="text-danger"></span>
             </div>
         </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="CreatedBy" class="form-label">Performed By (User ID)</label>
+                <input asp-for="CreatedBy" class="form-control" />
+                <span asp-validation-for="CreatedBy" class="text-danger"></span>
+            </div>
+
+        </div>
+
 
         <!-- Hidden metadata -->
         <input type="hidden" asp-for="CreatedBy" />
@@ -110,5 +119,7 @@
 </form>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
