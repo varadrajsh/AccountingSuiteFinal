@@ -55,16 +55,57 @@ namespace AccountingSuite.Data.Repositories
             return states;
         }
 
-        // Insert new state (Party-style pattern: Status + NewId)
+        // Insert new state (normalize + duplicate checks)
         public async Task<(string Status, int? NewId)> InsertAsync(State state)
         {
+            // Normalize StateName
+            string normalizedName = state.StateName?
+                .Trim()
+                .TrimEnd('.', '-', '_')
+                .ToUpperInvariant() ?? string.Empty;
+
+            // Check in same region
+            var statesInRegion = await GetByRegionAsync(state.RegionId);
+            bool existsInRegion = statesInRegion.Any(s =>
+                (s.StateName?.Trim().TrimEnd('.', '-', '_').ToUpperInvariant() ?? string.Empty)
+                    .Equals(normalizedName, StringComparison.OrdinalIgnoreCase));
+
+            if (existsInRegion)
+            {
+                return ("DUPLICATE_REGION", null);
+            }
+
+            // Check globally (other regions)
+            var allStates = await GetAllAsync();
+            bool existsElsewhere = allStates.Any(s =>
+                (s.StateName?.Trim().TrimEnd('.', '-', '_').ToUpperInvariant() ?? string.Empty)
+                    .Equals(normalizedName, StringComparison.OrdinalIgnoreCase));
+
+            if (existsElsewhere)
+            {
+                return ("DUPLICATE_OTHER_REGION", null);
+            }
+
+            bool existsSimilar = allStates.Any(s =>
+            {
+                var existing = (s.StateName?.Trim().TrimEnd('.', '-', '_').ToUpperInvariant() ?? string.Empty);
+                return existing.StartsWith(normalizedName) || normalizedName.StartsWith(existing);
+            });
+
+            if (existsSimilar)
+            {
+                return ("DUPLICATE_SIMILAR", null);
+            }
+
+
+            // Proceed with insert
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spState_Insert");
             cmd.CommandType = CommandType.StoredProcedure;
 
-            _db.AddParameter(cmd, "@StateName", SqlDbType.NVarChar, state.StateName, 100);
+            _db.AddParameter(cmd, "@StateName", SqlDbType.NVarChar, normalizedName, 100);
             _db.AddParameter(cmd, "@RegionId", SqlDbType.Int, state.RegionId);
-            _db.AddParameter(cmd, "@CreatedBy", SqlDbType.Int, 101); // or current user id
+            _db.AddParameter(cmd, "@CreatedBy", SqlDbType.Int, 101); // replace with current user id
 
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
@@ -75,33 +116,6 @@ namespace AccountingSuite.Data.Repositories
             }
 
             return ("ERROR", null);
-        }
-
-        // Get state by ID
-        public async Task<State?> GetByIdAsync(int id)
-        {
-            using var conn = await _db.GetSqlConnectionAsync();
-            using var cmd = _db.CreateCommand(conn, "spState_GetById");
-            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, id);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return new State
-                {
-                    StateId = Convert.ToInt32(reader["StateId"]),
-                    StateName = reader["StateName"].ToString()!,
-                    RegionId = Convert.ToInt32(reader["RegionId"])
-                };
-            }
-            return null;
-        }
-
-        // Check if state exists in region
-        public async Task<bool> Exists(string stateName, int regionId)
-        {
-            var states = await GetByRegionAsync(regionId);
-            return states.Any(s => string.Equals(s.StateName, stateName, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

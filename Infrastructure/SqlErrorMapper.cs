@@ -12,6 +12,7 @@ public static class SqlErrorMapper
         foreach (SqlError err in ex.Errors)
         {
             var mapped = MapState(err)
+                        ?? MapBranch(err)
                         ?? MapAudit(err)
                         ?? MapParty(err)
                         ?? MapAccountHead(err)
@@ -75,6 +76,25 @@ public static class SqlErrorMapper
 
         if (msg.Contains("FK_TransactionAudit_DisapprovedBy"))
             return ("DisapprovedBy", "Invalid disapprover selected. Please choose a valid user.");
+
+        return null;
+    }
+    //Branch Model
+    private static (string? Field, string Message)? MapBranch(SqlError err)
+    {
+        var msg = err.Message;
+
+        if (msg.Contains("UQ_Branch_Email"))
+            return ("Email", "A Branch with this Email already exists. Please enter a unique Email.");
+
+        if (msg.Contains("UQ_Branch_MobNumber"))
+            return ("MobNumber", "A Branch with this Mobile Number already exists. Please enter a unique Mobile Number.");
+
+        if (msg.Contains("UQ_Branch_LandNumber"))
+            return ("LandNumber", "A Branch with this Landline Number already exists. Please enter a unique Landline Number.");
+
+        if (msg.Contains("UQ_Branch_Name_State"))
+            return ("BranchName", "A Branch with this Name already exists in the selected State. Please enter a unique Name.");
 
         return null;
     }

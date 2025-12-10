@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AccountingSuite.Data;
 using AccountingSuite.Data.Repositories;
@@ -30,7 +29,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
         }
 
         // Index with optional region filter
-        public async Task<IActionResult> Index(int? regionId)
+        public async Task<IActionResult> Index(int? regionId, int? newStateId)
         {
             ViewBag.Regions = await _regionRepo.GetAllAsync();
 
@@ -46,6 +45,7 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 ViewData["SelectedRegion"] = null;
             }
 
+            ViewData["NewStateId"] = newStateId;
             return View(states);
         }
 
@@ -62,7 +62,6 @@ namespace AccountingSuite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(State state)
         {
-            state.StateName = state.StateName?.Trim().TrimEnd('.').ToUpperInvariant();
             if (!ModelState.IsValid)
             {
                 await PopulateRegionsDropdown();
@@ -73,122 +72,42 @@ namespace AccountingSuite.Areas.Admin.Controllers
             {
                 var result = await _stateRepo.InsertAsync(state);
 
-                // Map stored procedure status to friendly message
-                TempData["Message"] = result.Status;
-                if (result.Status != "SUCCESS")
+                if (result.Status == "DUPLICATE_REGION")
                 {
+                    ModelState.AddModelError("StateName", "State already exists in this region.");
                     await PopulateRegionsDropdown();
                     return View(state);
                 }
 
-                return RedirectToAction("Index", new { regionId = state.RegionId });
-            }
-            catch (SqlException ex)
-            {
-                // Map SQL exceptions to ModelState errors
-                SqlErrorMapper.Map(ex, ModelState);
-                TempData["Error"] = "Database error while adding state.";
-                await PopulateRegionsDropdown();
-                return View(state);
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Unexpected application error: " + ex.Message;
-                await PopulateRegionsDropdown();
-                return View(state);
-            }
-        }
-
-        // Show Edit form
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var state = await _stateRepo.GetByIdAsync(id);
-            if (state == null)
-            {
-                TempData["Error"] = "State not found.";
-                return RedirectToAction("Index");
-            }
-
-            await PopulateRegionsDropdown();
-            return View(state);
-        }
-
-        // Handle Edit submission
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(State state)
-        {
-            state.StateName = state.StateName?.Trim().TrimEnd('.').ToUpperInvariant();
-            if (!ModelState.IsValid)
-            {
-                await PopulateRegionsDropdown();
-                return View(state);
-            }
-
-            try
-            {
-                // Implement UpdateAsync in StateRepository similar to Party
-                var result = await _stateRepo.InsertAsync(state); // placeholder for UpdateAsync
-                TempData["Message"] = "State updated Successfully";
-
-                if (result.Status != "SUCCESS")
+                if (result.Status == "DUPLICATE_OTHER_REGION")
                 {
+                    ModelState.AddModelError("StateName", "State already exists in another region.");
                     await PopulateRegionsDropdown();
                     return View(state);
                 }
 
-                return RedirectToAction("Index", new { regionId = state.RegionId });
+                if (result.Status != "SUCCESS")
+                {
+                    ModelState.AddModelError("", "Unable to add state. " + result.Status);
+                    await PopulateRegionsDropdown();
+                    return View(state);
+                }
+
+                TempData["Message"] = "State Added Successfully";
+                return RedirectToAction("Index", new { regionId = state.RegionId, newStateId = result.NewId });
             }
             catch (SqlException ex)
             {
-                SqlErrorMapper.Map(ex, ModelState);
-                TempData["Error"] = "Database error while updating state.";
+                SqlErrorMapper.Map(ex, ModelState); // rely on ModelState for inline errors
                 await PopulateRegionsDropdown();
                 return View(state);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                TempData["Error"] = "Unexpected application error: " + ex.Message;
+                ModelState.AddModelError("", "Unexpected application error: " + ex.Message);
                 await PopulateRegionsDropdown();
                 return View(state);
             }
-        }
-
-        // Details partial
-        public async Task<IActionResult> Details(int id)
-        {
-            var state = await _stateRepo.GetByIdAsync(id);
-            if (state == null) return NotFound();
-
-            return PartialView("_DetailsPartial", state);
-        }
-
-        // Delete partial
-        public async Task<IActionResult> Delete(int id)
-        {
-            var state = await _stateRepo.GetByIdAsync(id);
-            if (state == null) return NotFound();
-
-            return PartialView("_DeletePartial", state);
-        }
-
-        // Handle Delete
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int StateId)
-        {
-            try
-            {
-                // Implement DeleteAsync in StateRepository similar to Party
-                TempData["Message"] = "State deleted successfully.";
-            }
-            catch (SqlException ex)
-            {
-                SqlErrorMapper.Map(ex, ModelState);
-                TempData["Error"] = "Unable to delete State due to database constraint.";
-            }
-            return RedirectToAction("Index");
         }
     }
 }

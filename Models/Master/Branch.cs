@@ -41,5 +41,11 @@ namespace AccountingSuite.Models.Master
 
         public bool IsActive { get; set; } = true;          // default Active
         public bool IsParcelBooking { get; set; } = false;  // default false
+
+         // Hybrid approach metadata
+        public int? CreatedBy { get; set; }                 // User/Admin ID who created
+        public DateTime? CreatedOn { get; set; }            // Timestamp of creation
+        public int? ModifiedBy { get; set; }                // User/Admin ID who last modified
+        public DateTime? ModifiedOn { get; set; }  
     }
 }

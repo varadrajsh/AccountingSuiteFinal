@@ -6,14 +6,23 @@
 
 @if (TempData["Message"] != null)
 {
-    <div class="alert alert-success">@TempData["Message"]</div>
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 <h2>Create New Branch</h2>
+
+<!-- ✅ Validation summary -->
+<div asp-validation-summary="All" class="text-danger mb-3"></div>
 
 <form asp-action="Create" method="post" class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
@@ -21,8 +30,8 @@
     <div class="col-10">
 
         <!-- State -->
-        <div class="col-md-12 mb-3">
-            <label asp-for="StateId" class="form-label">State</label>
+        <div class="mb-3">
+            <label asp-for="StateId" class="form-label"></label>
             <select asp-for="StateId" asp-items="ViewBag.States" class="form-select">
                 <option value="">-- Select State --</option>
             </select>
@@ -81,12 +90,16 @@
             <div class="col-md-6">
                 <label asp-for="IsParcelBooking" class="form-label">Parcel Booking</label>
                 <select asp-for="IsParcelBooking" class="form-select">
-                    <option value="false" selected>No</option>
+                    <option value="false">No</option>
                     <option value="true">Yes</option>
                 </select>
                 <span asp-validation-for="IsParcelBooking" class="text-danger"></span>
             </div>
         </div>
+
+        <!-- Hidden metadata -->
+        <input type="hidden" asp-for="CreatedBy" />
+        <input type="hidden" asp-for="CreatedOn" />
 
         <!-- Buttons -->
         <div class="d-flex gap-2">

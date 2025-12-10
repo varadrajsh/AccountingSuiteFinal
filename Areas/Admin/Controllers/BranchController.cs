@@ -18,38 +18,32 @@ namespace AccountingSuite.Areas.Admin.Controllers
             _stateRepo = stateRepo;
         }
 
-   
         private async Task PopulateStatesDropdown(int? selectedStateId = null)
         {
             var states = await _stateRepo.GetAllAsync();
             ViewBag.States = new SelectList(states, "StateId", "StateName", selectedStateId);
         }
 
-
-        //Index action uses lightweight list
         public async Task<IActionResult> Index(int? stateId, string searchTerm, int pageNumber = 1)
         {
             await PopulateStatesDropdown(stateId);
-
-            var branches = await _repo.GetAllWithState();
-
+            var branches = await _repo.GetAllWithStateAsync();
 
             if (stateId.HasValue && stateId.Value > 0)
             {
                 branches = branches.Where(b => b.StateId == stateId.Value).ToList();
-                ViewData["SelectedState"] = stateId.Value; // store selected state
+                ViewData["SelectedState"] = stateId.Value;
             }
-
 
             if (!string.IsNullOrEmpty(searchTerm))
                 branches = branches.Where(b => b.BranchName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            var paginated = PaginatedList<Branch>.Create(branches, pageNumber, 15); // Alter Number of Results to Display in Page 
+            var paginated = PaginatedList<Branch>.Create(branches.ToList(), pageNumber, 15);
             return View(paginated);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> CreateAsync()
         {
             await PopulateStatesDropdown();
             return View(new Branch { IsActive = true });
@@ -57,109 +51,75 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Branch branch)
+        public async Task<IActionResult> CreateAsync(Branch branch)
         {
             if (!ModelState.IsValid)
             {
-                await PopulateStatesDropdown();
+                // repopulate dropdowns
+                ViewBag.States = new SelectList(await _stateRepo.GetAllAsync(), "StateId", "StateName");
                 return View(branch);
             }
 
-            try
+            var result = await _repo.CreateAsync(branch, ModelState);
+            if (result == 1)
             {
-                branch.BranchCode = branch.BranchCode.Trim().ToUpperInvariant();
-                branch.BranchName = branch.BranchName.Trim().ToUpperInvariant();
-
-                await _repo.Insert(branch);
                 TempData["Message"] = "Branch created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            // If repository added errors, show them
+            if (!ModelState.IsValid)
             {
-                TempData["Error"] = ex.Message;
+                await PopulateStatesDropdown(branch.StateId);
+                return View(branch);
             }
 
-            await PopulateStatesDropdown();
-            return View(branch);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var branch = await _repo.GetById(id);
-            if (branch == null) return NotFound();
-
-            await PopulateStatesDropdown();
+            TempData["Error"] = "Failed to create branch.";
             ViewBag.States = new SelectList(await _stateRepo.GetAllAsync(), "StateId", "StateName");
             return View(branch);
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var branch = await _repo.GetByIdAsync(id);
+            if (branch == null) return NotFound();
+
+            await PopulateStatesDropdown(branch.StateId);
+            return View(branch);
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Branch branch)
         {
             if (!ModelState.IsValid)
             {
-                await PopulateStatesDropdown();
+                await PopulateStatesDropdown(branch.StateId);
                 return View(branch);
             }
 
-            try
+            var result = await _repo.UpdateAsync(branch, ModelState);
+            if (result > 0)
             {
-                branch.BranchCode = branch.BranchCode.Trim().ToUpperInvariant();
-                branch.BranchName = branch.BranchName.Trim().ToUpperInvariant();
-
-                await _repo.Update(branch);
                 TempData["Message"] = "Branch updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                TempData["Error"] = ex.Message;
-            }
 
-            await PopulateStatesDropdown();
+            // If update failed, ModelState will already have errors from SqlErrorMapper
+            await PopulateStatesDropdown(branch.StateId);
             return View(branch);
-        }
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var branch = await _repo.GetById(id);
-            if (branch == null) return NotFound();
-
-            return PartialView("_DetailsPartial", branch);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int branchId, bool isActive)
         {
-            try
-            {
-                await _repo.UpdateStatus(branchId, isActive);
+            await _repo.UpdateStatusAsync(branchId, isActive, ModelState);
+
+            if (ModelState.ErrorCount == 0)
                 TempData["Message"] = "Branch status updated.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = ex.Message;
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
-            {
-                await _repo.Delete(id);
-                TempData["Message"] = "Branch deleted successfully.";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Unable to delete branch: {ex.Message}";
-            }
+            else
+                TempData["Error"] = "Unable to update branch status.";
 
             return RedirectToAction(nameof(Index));
         }

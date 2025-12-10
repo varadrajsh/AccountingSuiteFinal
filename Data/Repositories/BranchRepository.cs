@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+using AccountingSuite.Infrastructure;
 using AccountingSuite.Models.Master;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Data.SqlClient;
 
 namespace AccountingSuite.Data.Repositories
@@ -15,97 +17,139 @@ namespace AccountingSuite.Data.Repositories
         {
             _db = db;
         }
-        public async Task<List<Branch>> GetAllWithState()
+
+        // Get all branches with state info
+        public async Task<IEnumerable<Branch>> GetAllWithStateAsync()
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spBranch_GetAllWithState");
+            using var reader = await _db.ExecuteReaderAsync(cmd);
 
-            using var reader = await cmd.ExecuteReaderAsync();
             var list = new List<Branch>();
-
             while (await reader.ReadAsync())
             {
                 list.Add(new Branch
                 {
-                    BranchId = Convert.ToInt32(reader["BranchId"]),
+                    BranchId = reader.GetInt32(reader.GetOrdinal("BranchId")),
                     BranchCode = reader["BranchCode"].ToString()!,
                     BranchName = reader["BranchName"].ToString()!,
-                    MobNumber = reader["MobNumber"]?.ToString(),
-                    StateId = Convert.ToInt32(reader["StateId"]),
+                    Email = reader["Email"].ToString()!,
+                    Address = reader["Address"].ToString()!,
+                    PinCode = reader["PinCode"].ToString()!,
+                    LandNumber = reader["LandNumber"].ToString()!,
+                    MobNumber = reader["MobNumber"].ToString()!,
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                    IsParcelBooking = reader.GetBoolean(reader.GetOrdinal("IsParcelBooking")),
+                    StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
                     State = new State
                     {
-                        StateId = Convert.ToInt32(reader["StateId"]),
+                        StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
                         StateName = reader["StateName"].ToString()!
-                    },
-                    IsActive = Convert.ToBoolean(reader["IsActive"])
+                    }
                 });
             }
             return list;
         }
-        //  Get all branches
-        public async Task<List<Branch>> GetAll()
+
+        // Get branch by ID
+        public async Task<Branch?> GetByIdAsync(int branchId)
         {
             using var conn = await _db.GetSqlConnectionAsync();
-            using var cmd = _db.CreateCommand(conn, "spBranch_GetAllWithState"); //  join with State
+            using var cmd = _db.CreateCommand(conn, "spBranch_GetById");
+            _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, branchId);
 
-            using var reader = await cmd.ExecuteReaderAsync();
-            var list = new List<Branch>();
+            using var reader = await _db.ExecuteReaderAsync(cmd);
+            if (!await reader.ReadAsync()) return null;
 
-            while (await reader.ReadAsync())
+            return new Branch
             {
-                list.Add(new Branch
+                BranchId = reader.GetInt32(reader.GetOrdinal("BranchId")),
+                BranchCode = reader["BranchCode"].ToString()!,
+                BranchName = reader["BranchName"].ToString()!,
+                Email = reader["Email"].ToString()!,
+                Address = reader["Address"].ToString()!,
+                PinCode = reader["PinCode"].ToString()!,
+                LandNumber = reader["LandNumber"].ToString()!,
+                MobNumber = reader["MobNumber"].ToString()!,
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                IsParcelBooking = reader.GetBoolean(reader.GetOrdinal("IsParcelBooking")),
+                StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
+                State = new State
                 {
-                    BranchId = Convert.ToInt32(reader["BranchId"]),
-                    BranchCode = reader["BranchCode"].ToString()!,
-                    BranchName = reader["BranchName"].ToString()!,
-                    MobNumber = reader["MobNumber"]?.ToString(), //  populate mobile
-                    StateId = Convert.ToInt32(reader["StateId"]),
-                    State = new State
-                    {
-                        StateId = Convert.ToInt32(reader["StateId"]),
-                        StateName = reader["StateName"].ToString()!
-                    },
-                    IsActive = Convert.ToBoolean(reader["IsActive"])
-                });
-            }
-            return list;
+                    StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
+                    StateName = reader["StateName"].ToString()!
+                }
+            };
         }
 
-        //  Insert branch
-        public async Task<int> Insert(Branch branch)
+        // Insert branch
+        public async Task<int> CreateAsync(Branch branch, ModelStateDictionary modelState)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spBranch_Insert");
 
-            _db.AddParameter(cmd, "@BranchCode", SqlDbType.NVarChar, branch.BranchCode, 20);
+            _db.AddParameter(cmd, "@BranchCode", SqlDbType.NVarChar, branch.BranchCode, 50);
             _db.AddParameter(cmd, "@BranchName", SqlDbType.NVarChar, branch.BranchName, 100);
             _db.AddParameter(cmd, "@StateId", SqlDbType.Int, branch.StateId);
+            _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, branch.Email, 100);
+            _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, branch.Address, 250);
+            _db.AddParameter(cmd, "@PinCode", SqlDbType.NVarChar, branch.PinCode, 10);
+            _db.AddParameter(cmd, "@LandNumber", SqlDbType.NVarChar, branch.LandNumber, 15);
+            _db.AddParameter(cmd, "@MobNumber", SqlDbType.NVarChar, branch.MobNumber, 15);
+            _db.AddParameter(cmd, "@IsParcelBooking", SqlDbType.Bit, branch.IsParcelBooking);
+            _db.AddParameter(cmd, "@CreatedBy", SqlDbType.Int, branch.CreatedBy);
 
-            return await _db.ExecuteNonQueryAsync(cmd);
+            try
+            {
+               using var reader = await _db.ExecuteReaderAsync(cmd);
+if (await reader.ReadAsync())
+{
+    var status = reader["Status"].ToString();
+    if (status == "SUCCESS") return 1;
+
+    var errorMsg = reader["ErrorMessage"]?.ToString();
+    if (!string.IsNullOrEmpty(errorMsg))
+        modelState.AddModelError("", errorMsg);
+}
+return 0;
+
+            }
+            catch (SqlException ex)
+            {
+                SqlErrorMapper.Map(ex, modelState);
+                return 0;
+            }
         }
 
-        //  Update branch
-        public async Task<int> Update(Branch branch)
+
+        // Update branch (only editable fields)
+        public async Task<int> UpdateAsync(Branch branch, ModelStateDictionary modelState)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spBranch_Update");
 
             _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, branch.BranchId);
-            _db.AddParameter(cmd, "@BranchName", SqlDbType.NVarChar, branch.BranchName, 100);
-            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, branch.StateId);
-            _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, branch.IsActive);
             _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, branch.Email, 100);
             _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, branch.Address, 250);
             _db.AddParameter(cmd, "@PinCode", SqlDbType.NVarChar, branch.PinCode, 10);
-            _db.AddParameter(cmd, "@LandNumber", SqlDbType.NVarChar, branch.LandNumber, 20);
-            _db.AddParameter(cmd, "@MobNumber", SqlDbType.NVarChar, branch.MobNumber, 20);
+            _db.AddParameter(cmd, "@LandNumber", SqlDbType.NVarChar, branch.LandNumber, 15);
+            _db.AddParameter(cmd, "@MobNumber", SqlDbType.NVarChar, branch.MobNumber, 15);
             _db.AddParameter(cmd, "@IsParcelBooking", SqlDbType.Bit, branch.IsParcelBooking);
+            _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, branch.IsActive);
 
-            return await _db.ExecuteNonQueryAsync(cmd);
+            try
+            {
+                return await _db.ExecuteNonQueryAsync(cmd);
+            }
+            catch (SqlException ex)
+            {
+                SqlErrorMapper.Map(ex, modelState);
+                return 0;
+            }
         }
 
-        //  Update branch status
-        public async Task<int> UpdateStatus(int branchId, bool isActive)
+        // Update status only
+        public async Task UpdateStatusAsync(int branchId, bool isActive, ModelStateDictionary modelState)
         {
             using var conn = await _db.GetSqlConnectionAsync();
             using var cmd = _db.CreateCommand(conn, "spBranch_UpdateStatus");
@@ -113,48 +157,14 @@ namespace AccountingSuite.Data.Repositories
             _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, branchId);
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, isActive);
 
-            return await _db.ExecuteNonQueryAsync(cmd);
-        }
-
-        //  Get branch by ID
-        public async Task<Branch?> GetById(int id)
-        {
-            using var conn = await _db.GetSqlConnectionAsync();
-            using var cmd = _db.CreateCommand(conn, "spBranch_GetById");
-            _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, id);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-            if (!await reader.ReadAsync()) return null;
-
-            return new Branch
+            try
             {
-                BranchId = Convert.ToInt32(reader["BranchId"]),
-                BranchCode = reader["BranchCode"].ToString()!,
-                BranchName = reader["BranchName"].ToString()!,
-                Email = reader["Email"]?.ToString(),
-                Address = reader["Address"]?.ToString(),
-                PinCode = reader["PinCode"]?.ToString(),
-                LandNumber = reader["LandNumber"]?.ToString(),
-                MobNumber = reader["MobNumber"]?.ToString(),
-                IsActive = Convert.ToBoolean(reader["IsActive"]),
-                IsParcelBooking = Convert.ToBoolean(reader["IsParcelBooking"]),
-                StateId = Convert.ToInt32(reader["StateId"]),
-                State = new State
-                {
-                    StateId = Convert.ToInt32(reader["StateId"]),
-                    StateName = reader["StateName"].ToString()!
-                }
-            };
-        }
-
-        //  Delete branch
-        public async Task<int> Delete(int id)
-        {
-            using var conn = await _db.GetSqlConnectionAsync();
-            using var cmd = _db.CreateCommand(conn, "spBranch_Delete");
-            _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, id);
-
-            return await _db.ExecuteNonQueryAsync(cmd);
+                await _db.ExecuteNonQueryAsync(cmd);
+            }
+            catch (SqlException ex)
+            {
+                SqlErrorMapper.Map(ex, modelState);
+            }
         }
     }
 }

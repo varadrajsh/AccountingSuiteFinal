@@ -1,9 +1,9 @@
-﻿@model AccountingSuite.Models.Common.PaginatedList<AccountingSuite.Models.Master.Branch>
+﻿@using AccountingSuite.Models.Common
+@using AccountingSuite.Models.Master
+@model AccountingSuite.Models.Common.PaginatedList<AccountingSuite.Models.Master.Branch>
+
 @{
-    var states = ViewBag.States as IEnumerable<AccountingSuite.Models.Master.State>;
-}
-@{
-    ViewData["Title"] = "Admin - Branches";
+    ViewData["Title"] = "Branch List";
 }
 
 <!-- Alerts -->
@@ -22,19 +22,15 @@
     </div>
 }
 
-<!-- Header with Add Branch + Search -->
+<!-- Header with Add + Search -->
 <div class="d-flex justify-content-between align-items-end mb-2">
-    <!-- Left block -->
-    <div class="d-flex align-items-center gap-2">
-        <h2 class="mb-0">Branch List</h2>
-
-    </div>
-
-    <!-- Right block: Search Branch form -->
+    <h2 class="mb-0">Branch List</h2>
     <div class="w-50">
         <form asp-action="Index" method="get" class="d-flex gap-2" id="searchForm">
-            <input type="text" id="searchTerm" name="searchTerm" class="form-control form-control-sm border-dark"
-                placeholder="Enter keywords to search Branch Details" value="@ViewData["CurrentFilter"]" />
+            <input type="text" id="searchTerm" name="searchTerm"
+                   value="@ViewData["CurrentFilter"]"
+                   class="form-control form-control-sm border-dark"
+                   placeholder="Enter keywords to search Branch Details" />
             <button type="submit" class="btn btn-sm btn-primary">Search</button>
             <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Reset</a>
         </form>
@@ -44,32 +40,27 @@
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-2">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Home</a></li>
         <li class="breadcrumb-item active" aria-current="page">Branch List</li>
     </ol>
 </nav>
 
-
 <!-- Action buttons -->
 <div class="d-flex flex-wrap gap-2 mb-3 w-100">
-    <!-- State filter + View Branch -->
     <form asp-action="Index" method="get" class="d-flex gap-2 w-50">
-        <select name="stateId" asp-items="ViewBag.States" asp-for="@ViewData["SelectedState"]"
-            class="form-select form-select-sm border-dark w-100 ">
+        <select name="stateId" asp-items="ViewBag.States" class="form-select form-select-sm border-dark w-100">
             <option value="">-- Select State --</option>
         </select>
-        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Branch</button>
+        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">View Branches</button>
     </form>
-    <!-- View All Branches -->
-    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Branches</a>
 
-    <!-- Add Branch -->
+    <a asp-action="Index" class="btn btn-sm btn-success text-center text-nowrap">View All Branches</a>
     <a asp-action="Create" class="btn btn-sm btn-primary text-center text-nowrap">Add Branch</a>
 </div>
 
 <!-- Table -->
 <div class="table-responsive">
-    <table class="table table-pill table-sm table-hover mt-2 align-middle">
+    <table class="table table-sm table-hover mt-2 align-middle">
         <thead class="table-light">
             <tr>
                 <th>Branch ID</th>
@@ -82,20 +73,22 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var b in Model)
+        @if (Model.TotalCount == 0)
+        {
+            <tr><td colspan="7" class="text-center fw-semibold">No records found</td></tr>
+        }
+        else
+        {
+            @foreach (var branch in Model)
             {
                 <tr>
-                    <td class="fw-bold">@b.BranchId.ToString("D4")</td>
-                    <td>@b.BranchCode</td>
-                    <td>@b.BranchName</td>
-                    <td>@b.MobNumber</td>
+                    <td class="fw-bold">@branch.BranchId</td>
+                    <td>@branch.BranchCode</td>
+                    <td>@branch.BranchName</td>
+                    <td>@branch.MobNumber</td>
+                    <td>@branch.State?.StateName</td>
                     <td>
-                        <span>
-                            @(b.State != null ? b.State.StateName : "—")
-                        </span>
-                    </td>
-                    <td>
-                        @if (b.IsActive)
+                        @if (branch.IsActive)
                         {
                             <span class="badge bg-success">Active</span>
                         }
@@ -108,19 +101,24 @@
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0">
                                 <li class="breadcrumb-item">
-                                    <a asp-area="Admin" asp-controller="Branch" asp-action="Edit" asp-route-id="@b.BranchId"
-                                        class="text-primary">Edit</a>
+                                    <a asp-action="Edit" asp-route-id="@branch.BranchId" class="text-primary">Edit</a>
                                 </li>
                                 <li class="breadcrumb-item">
-                                    <a href="javascript:void(0)" class="text-primary" data-bs-toggle="modal"
-                                        data-bs-target="#detailsModal" onclick="loadDetails(@b.BranchId)">Details</a>
+                                    <a href="javascript:void(0)" class="text-primary" onclick="showDetails(@branch.BranchId)">Details</a>
                                 </li>
-
+                                <li class="breadcrumb-item">
+                                    <form asp-action="UpdateStatus" method="post" class="d-inline">
+                                        <input type="hidden" name="branchId" value="@branch.BranchId" />
+                                        <input type="hidden" name="isActive" value="@(branch.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="btn btn-link p-0 text-danger">Delete</button>
+                                    </form>
+                                </li>
                             </ol>
                         </nav>
                     </td>
                 </tr>
             }
+        }
         </tbody>
     </table>
 </div>
@@ -130,8 +128,7 @@
     @if (Model.HasPreviousPage)
     {
         <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)"
-            asp-route-searchTerm="@ViewData["CurrentFilter"]" asp-route-stateId="@ViewData["SelectedState"]"
-            class="text-primary">&lt;Prev</a>
+           asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">&lt;Prev</a>
     }
     else
     {
@@ -139,21 +136,13 @@
     }
 
     <span class="fw-regular">
-        @if (Model.TotalCount == 0)
-        {
-            <span class="fw-semibold">No records found</span>
-        }
-        else
-        {
-            <span>Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records</span>
-        }
+        Showing @Model.StartRecord–@Model.EndRecord of @Model.TotalCount records
     </span>
 
     @if (Model.HasNextPage)
     {
         <a asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)"
-            asp-route-searchTerm="@ViewData["CurrentFilter"]" asp-route-stateId="@ViewData["SelectedState"]"
-            class="text-primary">Next&gt;</a>
+           asp-route-searchTerm="@ViewData["CurrentFilter"]" class="text-primary">Next&gt;</a>
     }
     else
     {
@@ -161,19 +150,42 @@
     }
 </div>
 
-<!-- Modal -->
+<!-- Modals -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-body" id="detailsContent"></div>
+            <div class="modal-body">Details content goes here</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">Edit form goes here</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">Delete confirmation goes here</div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        function loadDetails(id) {
-            $("#detailsContent").load('/Admin/Branch/Details/' + id);
+        function showDetails(id) {
+            // TODO: Ajax call to load branch details by id
+            $('#detailsModal').modal('show');
+        }
+        function showEdit(id) {
+            $('#editModal').modal('show');
+        }
+        function showDelete(id) {
+            $('#deleteModal').modal('show');
         }
     </script>
 }
