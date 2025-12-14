@@ -108,9 +108,8 @@
                                 </li>
                                 <li class="breadcrumb-item">
                                     <form asp-action="UpdateStatus" method="post" class="d-inline">
-                                        <input type="hidden" name="branchId" value="@branch.BranchId" />
-                                        <input type="hidden" name="isActive" value="@(branch.IsActive ? "false" : "true")" />
-                                        <button type="submit" class="btn btn-link p-0 text-danger">Delete</button>
+                                        <input type="hidden" name="branchId" value="@branch.BranchId">
+                                        <input type="hidden" name="isActive" value="@(branch.IsActive ? "false" : "true")">
                                     </form>
                                 </li>
                             </ol>
@@ -159,33 +158,13 @@
     </div>
 </div>
 
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-body">Edit form goes here</div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-body">Delete confirmation goes here</div>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <script>
-        function showDetails(id) {
-            // TODO: Ajax call to load branch details by id
-            $('#detailsModal').modal('show');
+             function showDetails(id) {
+            $("#detailsModal .modal-content").load("/Admin/Branch/Details/" + id, function () {
+                $("#detailsModal").modal("show");
+            });
         }
-        function showEdit(id) {
-            $('#editModal').modal('show');
-        }
-        function showDelete(id) {
-            $('#deleteModal').modal('show');
-        }
+     
     </script>
 }

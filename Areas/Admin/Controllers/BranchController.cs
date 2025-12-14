@@ -36,7 +36,15 @@ namespace AccountingSuite.Areas.Admin.Controllers
             }
 
             if (!string.IsNullOrEmpty(searchTerm))
-                branches = branches.Where(b => b.BranchName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+                branches = branches.Where(b =>
+                 (!string.IsNullOrEmpty(b.BranchName) && b.BranchName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.BranchCode) && b.BranchCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.Email) && b.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.Address) && b.Address.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.PinCode) && b.PinCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.LandNumber) && b.LandNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(b.MobNumber) && b.MobNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
 
             var paginated = PaginatedList<Branch>.Create(branches.ToList(), pageNumber, 15);
             return View(paginated);
@@ -92,12 +100,6 @@ namespace AccountingSuite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Branch branch)
         {
-            if (!ModelState.IsValid)
-            {
-                await PopulateStatesDropdown(branch.StateId);
-                return View(branch);
-            }
-
             var result = await _repo.UpdateAsync(branch, ModelState);
             if (result > 0)
             {
@@ -105,9 +107,17 @@ namespace AccountingSuite.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // If update failed, ModelState will already have errors from SqlErrorMapper
+            // If update failed
+            if (!ModelState.IsValid)
+            {
+                await PopulateStatesDropdown(branch.StateId);
+                return View(branch);
+            }
+
+            TempData["Error"] = "Failed to update branch.";
             await PopulateStatesDropdown(branch.StateId);
             return View(branch);
+
         }
 
         [HttpPost]
@@ -123,5 +133,15 @@ namespace AccountingSuite.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var branch = await _repo.GetByIdAsync(id);
+            if (branch == null) return NotFound();
+            return PartialView("_BranchDetails", branch);
+        }
+
     }
+
+
 }

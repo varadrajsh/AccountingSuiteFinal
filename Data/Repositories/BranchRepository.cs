@@ -129,6 +129,9 @@ return 0;
             using var cmd = _db.CreateCommand(conn, "spBranch_Update");
 
             _db.AddParameter(cmd, "@BranchId", SqlDbType.Int, branch.BranchId);
+            _db.AddParameter(cmd, "@BranchCode", SqlDbType.NVarChar, branch.BranchCode, 50);
+            _db.AddParameter(cmd, "@BranchName", SqlDbType.NVarChar, branch.BranchName, 100);
+            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, branch.StateId);
             _db.AddParameter(cmd, "@Email", SqlDbType.NVarChar, branch.Email, 100);
             _db.AddParameter(cmd, "@Address", SqlDbType.NVarChar, branch.Address, 250);
             _db.AddParameter(cmd, "@PinCode", SqlDbType.NVarChar, branch.PinCode, 10);
@@ -136,17 +139,28 @@ return 0;
             _db.AddParameter(cmd, "@MobNumber", SqlDbType.NVarChar, branch.MobNumber, 15);
             _db.AddParameter(cmd, "@IsParcelBooking", SqlDbType.Bit, branch.IsParcelBooking);
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, branch.IsActive);
+            _db.AddParameter(cmd, "@ModifiedBy", SqlDbType.Int, branch.ModifiedBy);
 
-            try
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
             {
-                return await _db.ExecuteNonQueryAsync(cmd);
+                var status = reader["Status"].ToString();
+                var errorMessage = reader["ErrorMessage"]?.ToString();
+
+                if (status == "SUCCESS")
+                    return 1;
+
+                if (status == "DUPLICATE" || status == "ERROR")
+                {
+                    modelState.AddModelError(string.Empty, errorMessage ?? "Unexpected error.");
+                    return 0;
+                }
             }
-            catch (SqlException ex)
-            {
-                SqlErrorMapper.Map(ex, modelState);
-                return 0;
-            }
+
+            return 0;
         }
+
 
         // Update status only
         public async Task UpdateStatusAsync(int branchId, bool isActive, ModelStateDictionary modelState)

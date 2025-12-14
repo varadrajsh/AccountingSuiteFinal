@@ -1,0 +1,32 @@
+﻿@model AccountingSuite.Models.Master.Branch
+
+<div class="modal-header">
+    <h5 class="modal-title">Branch Details</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body p-3">
+    <table class="table table-bordered table-striped">
+        <tbody>
+            <tr><th>Branch Code</th><td>@Model.BranchCode</td></tr>
+            <tr><th>Branch Name</th><td>@Model.BranchName</td></tr>
+            <tr><th>Email</th><td>@Model.Email</td></tr>
+            <tr><th>Address</th><td>@Model.Address</td></tr>
+            <tr><th>Pin Code</th><td>@Model.PinCode</td></tr>
+            <tr><th>Land Number</th><td>@Model.LandNumber</td></tr>
+            <tr><th>Mobile Number</th><td>@Model.MobNumber</td></tr>
+            <tr><th>State</th><td>@Model.State?.StateName</td></tr>
+            <tr><th>Active</th><td>@(Model.IsActive ? "Yes" : "No")</td></tr>
+            <tr><th>Parcel Booking</th><td>@(Model.IsParcelBooking ? "Yes" : "No")</td></tr>
+        @*     <tr><th>Created On</th><td>@Model.CreatedOn?.ToString("dd-MMM-yyyy HH:mm")</td></tr>
+            <tr><th>Modified On</th><td>@Model.ModifiedOn?.ToString("dd-MMM-yyyy HH:mm")</td></tr>
+            <tr><th>Performed By</th><td>@Model.CreatedBy</td></tr> *@
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-footer">
+    <a asp-area="Admin" asp-controller="Branch" asp-action="Edit" asp-route-id="@Model.BranchId"
+       class="btn btn-secondary">Edit</a>
+    <button class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+</div>

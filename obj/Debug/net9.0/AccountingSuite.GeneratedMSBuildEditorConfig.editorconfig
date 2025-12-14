@@ -40,12 +40,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/varadraj/source/repos/varadrajsh/AccountingSuiteFinal/Areas/Admin/Views/Branch/_BranchTablePartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXF9CcmFuY2hUYWJsZVBhcnRpYWwuY3NodG1s
+[C:/Users/varadraj/source/repos/varadrajsh/AccountingSuiteFinal/Areas/Admin/Views/Branch/_BranchDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXF9CcmFuY2hEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/varadraj/source/repos/varadrajsh/AccountingSuiteFinal/Areas/Admin/Views/Branch/_DetailsPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXF9EZXRhaWxzUGFydGlhbC5jc2h0bWw=
+[C:/Users/varadraj/source/repos/varadrajsh/AccountingSuiteFinal/Areas/Admin/Views/Branch/_BranchTablePartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQnJhbmNoXF9CcmFuY2hUYWJsZVBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/varadraj/source/repos/varadrajsh/AccountingSuiteFinal/Areas/Admin/Views/Party/Create.cshtml]

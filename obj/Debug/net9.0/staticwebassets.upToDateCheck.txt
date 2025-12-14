@@ -61,10 +61,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\css\site.css
-C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\favicon.ico
-C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\js\site.js
-C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map
@@ -123,3 +119,7 @@ C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\jquer
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\jquery\dist\jquery.slim.min.js
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\jquery\dist\jquery.slim.min.map
 C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\jquery\LICENSE.txt
+C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\favicon.ico
+C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
+C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\css\site.css
+C:\Users\varadraj\source\repos\varadrajsh\AccountingSuiteFinal\wwwroot\js\site.js
