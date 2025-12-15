@@ -1,9 +1,10 @@
-using System;
-using System.Data;
 using AccountingSuite.Infrastructure;
 using AccountingSuite.Models.Master;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.Data.SqlClient;
+using System;
+using System.Data;
 
 namespace AccountingSuite.Data;
 
@@ -126,6 +127,18 @@ public class AccountHeadRepository
         try
         {
             await _db.ExecuteNonQueryAsync(cmd);
+
+            // Audit entry
+            using var auditCmd = _db.CreateCommand(conn, "spTransactionAudit_Insert");
+            _db.AddParameter(auditCmd, "@ModelName", SqlDbType.NVarChar, "AccountHead", 100);
+            _db.AddParameter(auditCmd, "@Module", SqlDbType.NVarChar, "Master", 100);
+            _db.AddParameter(auditCmd, "@TransactionId", SqlDbType.Int, accountHeadId);
+            _db.AddParameter(auditCmd, "@BranchId", SqlDbType.Int, branchId);
+            _db.AddParameter(auditCmd, "@PerformedBy", SqlDbType.Int, performedBy);
+            _db.AddParameter(auditCmd, "@Status", SqlDbType.NVarChar, isActive ? "Active" : "Inactive", 50);
+            _db.AddParameter(auditCmd, "@Reason", SqlDbType.NVarChar, "Status toggle", 255);
+
+            await _db.ExecuteNonQueryAsync(auditCmd);
         }
         catch (SqlException ex)
         {

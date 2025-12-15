@@ -95,10 +95,21 @@ namespace AccountingSuite.Data.Repositories
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                return (
-                    Convert.ToInt32(reader["NewPartyId"]),
-                    reader["NewPartyCode"].ToString()!
-                );
+                var newId = Convert.ToInt32(reader["NewPartyId"]);
+                var newCode = reader["NewPartyCode"].ToString()!;
+
+                // Audit entry
+                using var auditCmd = _db.CreateCommand(conn, "spTransactionAudit_Insert");
+                _db.AddParameter(auditCmd, "@TableName", SqlDbType.NVarChar, "Party", 50);
+                _db.AddParameter(auditCmd, "@RecordId", SqlDbType.Int, newId);
+                _db.AddParameter(auditCmd, "@Action", SqlDbType.NVarChar, "INSERT", 20);
+                _db.AddParameter(auditCmd, "@ActionBy", SqlDbType.NVarChar, party.CreatedBy.ToString(), 50);
+                _db.AddParameter(auditCmd, "@Details", SqlDbType.NVarChar,
+                    $"Party {party.Name} created with code {newCode}", 250);
+
+                await _db.ExecuteNonQueryAsync(auditCmd);
+
+                return (newId, newCode);
             }
             throw new Exception("Insert failed: no result returned.");
         }
