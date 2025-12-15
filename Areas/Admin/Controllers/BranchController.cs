@@ -141,6 +141,15 @@ namespace AccountingSuite.Areas.Admin.Controllers
             return PartialView("_BranchDetails", branch);
         }
 
+           // Action to return partial branch table by state
+        public async Task<IActionResult> TableByState(int stateId, int pageNumber = 1)
+        {
+            // Fetch branches for the given state with pagination
+            var branches = await _repo.GetBranchesByStateAsync(stateId, pageNumber);
+
+            // Return the partial view (your branch table snippet)
+            return PartialView("_BranchTablePartial", branches);
+        }
     }
 
 

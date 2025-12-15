@@ -1,11 +1,12 @@
+﻿using AccountingSuite.Infrastructure;
+using AccountingSuite.Models.Common;
+using AccountingSuite.Models.Master;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using AccountingSuite.Infrastructure;
-using AccountingSuite.Models.Master;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Data.SqlClient;
 
 namespace AccountingSuite.Data.Repositories
 {
@@ -141,7 +142,7 @@ return 0;
             _db.AddParameter(cmd, "@IsActive", SqlDbType.Bit, branch.IsActive);
             _db.AddParameter(cmd, "@ModifiedBy", SqlDbType.Int, branch.ModifiedBy);
 
-            using var reader = await cmd.ExecuteReaderAsync();
+            using var reader = await _db.ExecuteReaderAsync(cmd); // ✅ use helper consistently
 
             if (await reader.ReadAsync())
             {
@@ -162,6 +163,7 @@ return 0;
         }
 
 
+
         // Update status only
         public async Task UpdateStatusAsync(int branchId, bool isActive, ModelStateDictionary modelState)
         {
@@ -180,5 +182,39 @@ return 0;
                 SqlErrorMapper.Map(ex, modelState);
             }
         }
+
+        public async Task<PaginatedList<Branch>> GetBranchesByStateAsync(int stateId, int pageNumber, int pageSize = 10)
+        {
+            using var conn = await _db.GetSqlConnectionAsync();
+            using var cmd = _db.CreateCommand(conn, "spBranch_GetByState");
+
+            _db.AddParameter(cmd, "@StateId", SqlDbType.Int, stateId);
+           
+            using var reader = await _db.ExecuteReaderAsync(cmd);
+            var list = new List<Branch>();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new Branch
+                {
+                    BranchId = reader.GetInt32(reader.GetOrdinal("BranchId")),
+                    BranchCode = reader["BranchCode"].ToString() ?? string.Empty,
+                    BranchName = reader["BranchName"].ToString() ?? string.Empty,
+                    MobNumber = reader["MobNumber"].ToString() ?? string.Empty,
+                    StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                    State = new State
+                    {
+                        StateId = reader.GetInt32(reader.GetOrdinal("StateId")),
+                        StateName = reader["StateName"].ToString() ?? string.Empty
+                    }
+                });
+            }
+
+            // total count should come from another query or output parameter
+            int totalCount = list.Count; // placeholder
+            return new PaginatedList<Branch>(list, totalCount, pageNumber, pageSize);
+        }
+
     }
 }

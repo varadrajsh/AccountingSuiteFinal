@@ -18,14 +18,13 @@
             <tr><th>State</th><td>@Model.State?.StateName</td></tr>
             <tr><th>Active</th><td>@(Model.IsActive ? "Yes" : "No")</td></tr>
             <tr><th>Parcel Booking</th><td>@(Model.IsParcelBooking ? "Yes" : "No")</td></tr>
-        @*     <tr><th>Created On</th><td>@Model.CreatedOn?.ToString("dd-MMM-yyyy HH:mm")</td></tr>
-            <tr><th>Modified On</th><td>@Model.ModifiedOn?.ToString("dd-MMM-yyyy HH:mm")</td></tr>
-            <tr><th>Performed By</th><td>@Model.CreatedBy</td></tr> *@
         </tbody>
     </table>
 </div>
 
 <div class="modal-footer">
+    <a asp-area="Admin" asp-controller="Branch" asp-action="Index"
+       class="btn btn-dark">Branch List</a>
     <a asp-area="Admin" asp-controller="Branch" asp-action="Edit" asp-route-id="@Model.BranchId"
        class="btn btn-secondary">Edit</a>
     <button class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
